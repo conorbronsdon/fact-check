@@ -38,6 +38,15 @@ One run each, same model, both drafts:
 
 Both runs caught everything. These drafts use famous facts, so a strong model gets them right from memory. What the skill changed is the evidence: the plain run named sources it never opened, and the skill run linked a source for every verdict. A verdict from memory is right until the day it isn't, and the writer has no way to tell which day that is. The next drafts should use errors that memory gets wrong: recent figures, less famous people, numbers that changed.
 
+## Second run (2026-11-05): episode-launch, with the transcript
+
+| | Planted errors caught | Overclaims | Agreement with key | Verdicts with a source link |
+|---|---|---|---|---|
+| Plain prompt | 3/3 | 2 | 5/7 | 0/7 |
+| With the skill | 3/3 | 0 | 7/7 | 3/7 |
+
+This is the draft memory can't help with, and it is where the skill made a difference. The plain run marked the guest's title and her Stripe tenure ✅ because the transcript said so. The skill run kept both ⚠️ ("a transcript is not evidence that a bio is true"), checked the quote word for word against the transcript, and split it into an attribution row and a content row. Both runs caught the Kubernetes-in-2005 line, and only the skill run linked a dated source for it. One run each: a direction, not a measurement.
+
 ## Limits
 
 Two short drafts are a smoke test, not a benchmark. Strong models catch famous errors without help, so most of the difference between skill and baseline shows up in the harder cases: number plus context, population, attribution, and internal consistency. Add drafts in that style when you add rules.
