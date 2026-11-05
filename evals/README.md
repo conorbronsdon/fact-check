@@ -6,14 +6,15 @@ Drafts with planted errors, an answer key for each, and a scorer. Use them to ch
 |---|---|---|
 | `drafts/tech-history.md` | 5 of 9 claims | A wrong year, a real date paired with the wrong employer, a misattributed quote, a false superlative, a survey figure with the wrong population |
 | `drafts/leaders-promo.md` | 2 of 6 claims, plus one internal contradiction | A real founding year paired with the wrong prior employer, and a date the draft states two ways |
+| `drafts/episode-launch.md` + `episode-launch.transcript.md` | 3 of 7 claims, plus 2 that only the guest supports | A misquote checked against the transcript, a host-said-it error (Kubernetes in 2005) that the transcript "confirms", a headcount the transcript contradicts, and bio claims about an invented guest that must not be marked ✅ |
 
-The true claims are there on purpose. Flagging one of them as ❌ counts as a false alarm.
+The true claims are there on purpose. Flagging one of them as ❌ counts as a false alarm. Marking a claim ✅ when the key says only the subject or the writer's notes support it counts as an **overclaim**. That is the failure the episode-launch draft is built to catch, and memory can't help with it.
 
 The facts chosen are stable and well documented, so the key should not go stale. If a source changes, fix the key and say why in its `why` field.
 
 ## Run
 
-1. Give an agent the skill and one draft. Do not let it see `answers/`. Save its log (the markdown table) to a file.
+1. Give an agent the skill and one draft, plus any `companions` the key lists (as the writer's supplied files). Do not let it see `answers/`. Save its log (the markdown table) to a file.
 2. Score it:
 
 ```bash

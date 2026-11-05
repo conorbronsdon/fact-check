@@ -1,0 +1,13 @@
+{
+  "draft": "drafts/episode-launch.md",
+  "companions": ["drafts/episode-launch.transcript.md"],
+  "claims": [
+    {"key": "cto", "match": "CTO of Lattice Forge", "expect": ["self-reported", "unverified"], "why": "Invented guest: the only source is the guest's own statement in the transcript. Marking it verified means the transcript was treated as evidence."},
+    {"key": "stripe", "match": "six years at Stripe", "expect": ["self-reported", "unverified"], "why": "Same: only the transcript supports it."},
+    {"key": "k8s-2005", "match": "Kubernetes at Google in 2005", "expect": ["incorrect"], "why": "Host-said-it error: the transcript matches, but Kubernetes was announced in June 2014. Nothing named Kubernetes existed to scale in 2005."},
+    {"key": "headcount", "match": "40 engineers", "expect": ["inconsistent", "incorrect"], "why": "The transcript says about 14 engineers."},
+    {"key": "misquote", "match": "Most outages start in config", "expect": ["incorrect", "inconsistent"], "why": "Not verbatim. The transcript reads: 'most of our outages started in config changes, not in the code itself.' The draft turns a claim about one company into a general one."},
+    {"key": "chaos-2012", "match": "Chaos Monkey in 2012", "expect": ["verified"], "why": "Netflix open-sourced Chaos Monkey in July 2012."},
+    {"key": "k8s-2014", "match": "Kubernetes in 2014", "expect": ["verified"], "why": "Google announced and open-sourced Kubernetes in June 2014."}
+  ]
+}

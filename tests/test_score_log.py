@@ -69,6 +69,15 @@ class Scoring(unittest.TestCase):
         self.assertEqual(res["missing"], ["err"])
         self.assertEqual(res["caught"], 1)
 
+    def test_overclaim_when_only_self_reported_is_marked_verified(self):
+        key = {"claims": [{"key": "bio", "match": "Python was first released", "expect": ["self-reported", "unverified"]}]}
+        self.assertEqual(score(key, parse_log(GOOD))["overclaims"], 1)
+        weak = GOOD.replace("✅ Verified", "🏷️ Self-reported")
+        self.assertEqual(score(key, parse_log(weak))["overclaims"], 0)
+
+    def test_verified_claim_is_never_an_overclaim(self):
+        self.assertEqual(score(KEY, parse_log(GOOD))["overclaims"], 0)
+
     def test_counts_linked_sources(self):
         log = GOOD.replace("| python.org |", "| https://www.python.org/doc/ |")
         self.assertEqual(score(KEY, parse_log(log))["linked"], 1)
@@ -83,6 +92,8 @@ class EvalSet(unittest.TestCase):
         for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
             key = json.loads(path.read_text(encoding="utf-8"))
             draft = (ROOT / "evals" / key["draft"]).read_text(encoding="utf-8").lower()
+            for comp in key.get("companions", []):
+                self.assertTrue((ROOT / "evals" / comp).is_file(), comp)
             self.assertTrue(any(set(c["expect"]) & {"incorrect", "stale"} for c in key["claims"]))
             for c in key["claims"]:
                 self.assertEqual(draft.count(c["match"].lower()), 1, f"{path.name}: {c['key']}")

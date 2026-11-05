@@ -9,7 +9,8 @@ answer-key claim is matched to the first log row whose claim cell contains
 its `match` text (case-insensitive). A planted error (expect includes
 "incorrect" or "stale") is caught when the row's verdict is one the key
 accepts. A clean claim is a false alarm when the log marks it incorrect or
-stale and the key does not accept that. It also counts verdicts whose source
+stale and the key does not accept that. An overclaim is a claim the key
+says only the subject or the writer's notes support, marked verified. It also counts verdicts whose source
 cell carries a link: a verdict from memory, with no link, is right by luck.
 
 Exit codes: 0 = scored (and recall >= --min-recall, if given),
@@ -31,6 +32,7 @@ VERDICTS = [
     ("verified", ("✅", "verified", "accurate", "correct", "true")),
 ]
 ERRORS = {"incorrect", "stale"}
+WEAK = {"self-reported", "unverified"}
 
 
 def verdict_of(cell: str) -> str | None:
@@ -63,12 +65,14 @@ def score(key: dict, rows: list[dict]) -> dict:
         results.append({"key": c["key"], "planted_error": planted, "expect": c["expect"],
                         "got": got, "found": row is not None, "ok": got in c["expect"],
                         "linked": bool(row and row["linked"]),
-                        "false_alarm": (not planted) and got in ERRORS and got not in c["expect"]})
+                        "false_alarm": (not planted) and got in ERRORS and got not in c["expect"],
+                        "overclaim": got == "verified" and set(c["expect"]) <= WEAK})
     planted = [r for r in results if r["planted_error"]]
     caught = sum(1 for r in planted if r["ok"])
     return {"planted_errors": len(planted), "caught": caught,
             "recall": round(caught / len(planted), 3) if planted else 1.0,
             "false_alarms": sum(1 for r in results if r["false_alarm"]),
+            "overclaims": sum(1 for r in results if r["overclaim"]),
             "missing": [r["key"] for r in results if not r["found"]],
             "agreement": round(sum(1 for r in results if r["ok"]) / len(results), 3) if results else 1.0,
             "linked": sum(1 for r in results if r["linked"]),
@@ -94,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(res, indent=2, ensure_ascii=False))
     else:
         print(f"planted errors caught: {res['caught']}/{res['planted_errors']} (recall {res['recall']}); "
-              f"false alarms: {res['false_alarms']}; agreement with key: {res['agreement']}; "
+              f"false alarms: {res['false_alarms']}; overclaims: {res['overclaims']}; agreement with key: {res['agreement']}; "
               f"verdicts with a source link: {res['linked']}/{len(res['claims'])}")
         for r in res["claims"]:
             if not r["ok"]:
