@@ -36,6 +36,23 @@ class Verdicts(unittest.TestCase):
         self.assertEqual(verdict_of("Unverifiable"), "unverified")
         self.assertEqual(verdict_of("✅"), "verified")
 
+    def test_negation_and_qualifiers(self):
+        self.assertEqual(verdict_of("Not verified"), "unverified")
+        self.assertEqual(verdict_of("Not correct"), "incorrect")
+        self.assertEqual(verdict_of("not true"), "incorrect")
+        self.assertEqual(verdict_of("Partially correct"), "incorrect")
+
+    def test_first_verdict_wins_over_later_words(self):
+        self.assertEqual(verdict_of("⚠️ Unverified (figure may be outdated)"), "unverified")
+        self.assertEqual(verdict_of("✅ Verified — not false"), "verified")
+        self.assertEqual(verdict_of("✅ Verified (draft said ❌ earlier)"), "verified")
+
+    def test_more_vocabulary(self):
+        for word in ("Inaccurate", "Wrong", "Misattributed"):
+            self.assertEqual(verdict_of(word), "incorrect", word)
+        self.assertEqual(verdict_of("Confirmed"), "verified")
+        self.assertEqual(verdict_of("✓"), "verified")
+
     def test_incorrect_is_not_read_as_correct(self):
         self.assertEqual(verdict_of("Incorrect"), "incorrect")
 
@@ -83,6 +100,28 @@ class Scoring(unittest.TestCase):
         self.assertEqual(score(KEY, parse_log(log))["linked"], 1)
         self.assertEqual(score(KEY, parse_log(GOOD))["linked"], 0)
 
+    def test_split_grouped_and_bold_rows(self):
+        log = ("| 5a | \"Linux followed in 1995\" (attribution) | ❌ | x |\n"
+               "| 5b | same, content | ⚠️ | x |\n"
+               "| 3–4 | Python was first released; others | ⚠️ Unverified | x |\n"
+               "| **6** | took over as Microsoft CEO in 2016 | 🔀 | x |\n")
+        rows = parse_log(log)
+        self.assertEqual(len(rows), 4)
+        res = score(KEY, rows)
+        self.assertEqual(res["missing"], [])
+        self.assertEqual(res["caught"], 2)
+
+    def test_escaped_pipe_inside_a_claim(self):
+        log = "| 2 | a \\| b Linux followed in 1995 | ❌ Incorrect | https://kernel.org |\n"
+        rows = parse_log(log)
+        self.assertEqual(rows[0]["verdict"], "incorrect")
+        self.assertIn("a | b", rows[0]["claim"])
+        self.assertTrue(rows[0]["linked"])
+
+    def test_link_only_counts_in_the_source_column(self):
+        log = "| 1 | Python was first released | ✅ | python.org | https://notes.example |\n"
+        self.assertFalse(parse_log(log)[0]["linked"])
+
     def test_header_and_prose_are_not_rows(self):
         self.assertEqual(len(parse_log(GOOD)), 3)
 
@@ -115,6 +154,16 @@ class CLI(unittest.TestCase):
             log.write_text(GOOD.replace("❌ Incorrect", "✅ Verified"), encoding="utf-8")
             self.assertEqual(self.run_cli(str(key), str(log), "--min-recall", "1.0").returncode, 1)
             self.assertEqual(self.run_cli(str(key), "nope.md").returncode, 2)
+
+    def test_malformed_or_empty_key_is_2(self):
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "log.md"
+            log.write_text(GOOD, encoding="utf-8")
+            for bad in ({}, {"claims": []}, {"claims": [{"key": "x"}]}, []):
+                key = Path(d) / "key.json"
+                key.write_text(json.dumps(bad), encoding="utf-8")
+                r = self.run_cli(str(key), str(log), "--min-recall", "0.8")
+                self.assertEqual(r.returncode, 2, bad)
 
 
 if __name__ == "__main__":

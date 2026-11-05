@@ -23,42 +23,76 @@ import json
 import re
 import sys
 
-VERDICTS = [
-    ("incorrect", ("❌", "incorrect", "refuted", "false")),
-    ("stale", ("🕰", "stale", "outdated")),
-    ("inconsistent", ("🔀", "inconsistent")),
-    ("self-reported", ("🏷", "self-reported", "self reported")),
-    ("unverified", ("⚠", "unverified", "unverifiable", "inconclusive")),
-    ("verified", ("✅", "verified", "accurate", "correct", "true")),
+# (verdict, pattern). The verdict is the match that starts earliest in the
+# cell, so "Not verified" is unverified and "⚠️ Unverified (may be outdated)"
+# is unverified, not stale. At the same position the longer match wins.
+VERDICT_PATTERNS = [
+    ("incorrect", r"❌|✗|\b(?:not|partially|partly|half|mostly) (?:correct|true|accurate)\b"
+                  r"|\b(?:incorrect|inaccurate|refuted|false|wrong|misattributed|misquoted)\b"),
+    ("unverified", r"⚠|\bnot (?:verified|confirmed)\b|\b(?:unverified|unverifiable|inconclusive)\b"),
+    ("stale", r"🕰|\b(?:stale|outdated)\b"),
+    ("inconsistent", r"🔀|\binconsistent\b"),
+    ("self-reported", r"🏷|\bself[- ]reported\b"),
+    ("verified", r"✅|✓|\b(?:verified|confirmed|accurate|correct|true)\b"),
 ]
 ERRORS = {"incorrect", "stale"}
 WEAK = {"self-reported", "unverified"}
+ROW_ID = re.compile(r"\**#?\d+[a-z]?(?:\s*[-–]\s*\d+[a-z]?)?\**")
+CELL_SPLIT = re.compile(r"(?<!\\)\|")
 
 
 def verdict_of(cell: str) -> str | None:
-    low = cell.lower()
-    for name, marks in VERDICTS:
-        if any(m in cell if not m.isascii() else re.search(rf"\b{re.escape(m)}\b", low)
-               for m in marks):
-            return name
-    return None
+    """The verdict named first in the cell. An emoji directly followed by a
+    verdict word defers to the word ("⚠ Outdated" is stale)."""
+    found = []
+    for name, pat in VERDICT_PATTERNS:
+        for m in re.finditer(pat, cell, re.I):
+            found.append((m.start(), -(m.end() - m.start()), m.end(), name, m.group(0)))
+    if not found:
+        return None
+    found.sort()
+    first = found[0]
+    if not first[4].isascii():
+        word = [f for f in found if f[4].isascii() and first[2] <= f[0] <= first[2] + 3]
+        if word:
+            return word[0][3]
+    return first[3]
 
 
 def parse_log(text: str) -> list[dict]:
-    """Rows of a markdown table whose first cell is a claim number."""
+    """Rows of a markdown table whose first cell is a claim number.
+
+    Accepts split rows (5a, 5b), grouped rows (3-4), bold numbers, and
+    escaped pipes inside cells.
+    """
     rows = []
     for line in text.splitlines():
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) >= 3 and re.fullmatch(r"#?\d+", cells[0]):
-            source = " | ".join(cells[3:])
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip().replace("\\|", "|") for c in CELL_SPLIT.split(line.strip("|"))]
+        if len(cells) >= 3 and ROW_ID.fullmatch(cells[0]):
+            source = cells[3] if len(cells) > 3 else ""
             rows.append({"claim": cells[1], "verdict": verdict_of(cells[2]), "raw": cells[2],
                          "linked": bool(re.search(r"https?://", source))})
     return rows
 
 
+def load_key(path: str) -> dict:
+    with open(path, encoding="utf-8") as fh:
+        key = json.load(fh)
+    claims = key.get("claims") if isinstance(key, dict) else None
+    if not claims or not all(isinstance(c, dict) and c.get("match") and c.get("expect")
+                             and c.get("key") for c in claims):
+        raise ValueError(f"{path}: needs a non-empty 'claims' list, each with key, match, and expect")
+    return key
+
+
 def score(key: dict, rows: list[dict]) -> dict:
     results = []
     for c in key["claims"]:
+        # A claim split across rows (5a attribution, 5b content) or grouped
+        # with others: the first matching row is the one scored.
         row = next((r for r in rows if c["match"].lower() in r["claim"].lower()), None)
         got = row["verdict"] if row else None
         planted = bool(ERRORS & set(c["expect"]))
@@ -87,8 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     try:
-        with open(args.key, encoding="utf-8") as fh:
-            key = json.load(fh)
+        key = load_key(args.key)
         text = sys.stdin.read() if args.log == "-" else open(args.log, encoding="utf-8").read()
     except (OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)

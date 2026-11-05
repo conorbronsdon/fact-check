@@ -92,7 +92,7 @@ It skips front matter, code, URLs, list numbering, and version strings. Tests (e
 
 ## Limits
 
-It reports what sources say on the day it runs, with dates, and archive links for anything it marks wrong. It does not judge arguments, predictions, or opinions, and it needs web access to verify anything. Without web access it still extracts claims and marks them unverified.
+It reports what sources say on the day it runs, with dates, and archive links where it can get them for anything it marks wrong. It does not judge arguments, predictions, or opinions, and it needs web access to verify anything. Without web access it still extracts claims and marks them unverified.
 
 ## More from me
 

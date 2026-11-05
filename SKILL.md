@@ -46,7 +46,7 @@ Rules:
 - **Skip opinions, predictions, and the writer's own framing.** "This changes the economics" is a view. "Inference costs fell 80% in 2025" is a claim.
 - **A number and the context it sits in are one claim.** "Scaled it at Netflix to 300M subscribers" can be false as a whole even when Netflix, the person's tenure there, and the 300M figure are each real on their own. Check them together.
 - **A number and its population are one claim.** "84% of developers use AI tools" is wrong if the survey said 84% "use or plan to use," or asked only professional developers, or only its own readers. Write down who was counted, when, and what exactly was measured, then check all of it.
-- **A quote is two claims.** That the person said it (attribution) and that what they said is true (content). Check them separately. A true quote of a false statement is still a false statement in your draft, unless the draft frames it as the person's view.
+- **A quote is two claims.** That the person said it (attribution) and that what they said is true (content). Check them separately. A true quote of a false statement is still a false statement in your draft when the draft uses it as support. It is fine to publish only if the draft also says the statement is wrong or disputed.
 - **Do not merge a claim across artifacts.** If the same claim appears in a blog post and in an email that was already sent, list both. Only one of them can still be fixed.
 - **Number the claims.** The numbers carry through to the log.
 
@@ -66,11 +66,11 @@ Where to look, in order:
 
 Do not cite an article that restates a number without linking the original. Authors often cite older data that has since been updated, or quote a summary that rounds or misstates the source.
 
-**Before you search, write down what would refute the claim.** "If the survey's question wording includes 'plan to use,' the claim is wrong." Deciding the test first stops you from accepting the first page that roughly agrees. For Tier A claims, and for any claim you are about to mark ❌, confirm the result by a second route: a different source or a different method (the filing itself after a news report, the person's own profile after a company page).
+**Before you search, write down what would refute the claim.** "If the survey's question wording includes 'plan to use,' the claim is wrong." Deciding the test first stops you from accepting the first page that roughly agrees. For Tier A claims, and for any claim you are about to mark ❌, confirm the result by a second route: a different source or a different method (the filing itself after a news report; a dated news report or a third-party record after the person's own profile, which on its own is only 🏷️ self-reported).
 
 **Record when and where.** For every source, give its publication date and the date you checked it. For a ❌, a 🕰️, or any Tier A claim, add an archived copy when you can (a Wayback Machine or archive.today link) so the writer can still see what you saw if the page changes. If the primary source is paywalled, say so (`source not publicly accessible`), then look for a public equivalent: the press release, the abstract, the filing.
 
-**Stale by default.** A figure that changes over time (users, revenue, headcount, rankings, prices, model specs) is 🕰️ if a newer figure exists, however recent the original. With no newer figure, flag any such number more than two years old for the writer to date ("as of 2024") rather than present as current.
+**Stale by default.** A figure that changes over time (users, revenue, headcount, rankings, prices, model specs) is 🕰️ if a newer figure exists, however recent the original. With no newer figure, mark any such number more than two years old 🕰️ with the note "no newer figure found; date it" ("as of 2024") so the writer doesn't present it as current.
 
 **The draft and the writer's notes are never evidence that a claim is true.** A transcript, a prep doc, or an earlier draft records what someone said, not whether it is true. If the claim came from what a speaker said on a recording, it still needs an outside source.
 
@@ -121,7 +121,7 @@ If a subagent fails, times out, or returns something that isn't one line in that
 |---|---|
 | ✅ **Verified** | An independent primary or credible source confirms it as written. |
 | 🏷️ **Self-reported** | The only source is the subject itself (a company's own metric, a person's own bio). Fine to publish with attribution. |
-| 🕰️ **Stale** | It was true, but a newer figure exists. Give the current one and its date. |
+| 🕰️ **Stale** | It was true, but a newer figure exists (give it and its date), or it is a changing figure more than two years old presented as current. |
 | ⚠️ **Unverified** | Could not confirm or refute. Say what you searched and why it came up empty. |
 | ❌ **Incorrect** | A credible source contradicts it. Give the correct version and the source. |
 | 🔀 **Inconsistent** | The draft disagrees with itself or a companion file (Step 2), and no outside source settled it. |

@@ -11,5 +11,6 @@
 - Every source carries its publication date and check date, plus an archive link for ❌, 🕰️, and Tier A; paywalled sources are labelled, and a public equivalent is sought.
 - A changing figure with no newer replacement is flagged for dating once it is more than two years old.
 - A failed or malformed subagent result is ⚠️ "check did not complete," never a guessed verdict.
+- `score_log.py` reads the verdict named first in a cell, handles negation ("not verified") and qualifiers ("partially correct"), accepts split, grouped, and bold row numbers and escaped pipes, counts links only in the source column, and exits 2 on a malformed or empty answer key.
 - `evals/` with planted-error drafts and answer keys; `scripts/score_log.py` grades a log against a key and counts verdicts that link a source.
 - `scripts/extract_claims.py`: dependency-free extractor that lists sentences containing numbers, money, dates, superlatives, attributions, and quotes. Tested with must-fire and must-not-fire cases.
