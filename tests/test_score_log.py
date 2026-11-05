@@ -69,6 +69,11 @@ class Scoring(unittest.TestCase):
         self.assertEqual(res["missing"], ["err"])
         self.assertEqual(res["caught"], 1)
 
+    def test_counts_linked_sources(self):
+        log = GOOD.replace("| python.org |", "| https://www.python.org/doc/ |")
+        self.assertEqual(score(KEY, parse_log(log))["linked"], 1)
+        self.assertEqual(score(KEY, parse_log(GOOD))["linked"], 0)
+
     def test_header_and_prose_are_not_rows(self):
         self.assertEqual(len(parse_log(GOOD)), 3)
 

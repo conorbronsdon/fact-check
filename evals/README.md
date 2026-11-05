@@ -26,6 +26,17 @@ It prints planted errors caught, recall, false alarms, and agreement with the ke
 
 `--min-recall 0.8` makes the scorer exit 1 below that recall, so it can gate a change. The claim cell must quote the draft text; the scorer matches each key entry by substring.
 
+## First run (2026-11-05)
+
+One run each, same model, both drafts:
+
+| | Planted errors caught | False alarms | Verdicts with a source link | Web searches |
+|---|---|---|---|---|
+| Plain prompt | 7/7 | 0 | 1/15 | 1 |
+| With the skill | 7/7 | 0 | 15/15 | 15, plus about 20 page fetches and 6 archive links |
+
+Both runs caught everything. These drafts use famous facts, so a strong model gets them right from memory. What the skill changed is the evidence: the plain run named sources it never opened, and the skill run linked a source for every verdict. A verdict from memory is right until the day it isn't, and the writer has no way to tell which day that is. The next drafts should use errors that memory gets wrong: recent figures, less famous people, numbers that changed.
+
 ## Limits
 
 Two short drafts are a smoke test, not a benchmark. Strong models catch famous errors without help, so most of the difference between skill and baseline shows up in the harder cases: number plus context, population, attribution, and internal consistency. Add drafts in that style when you add rules.
