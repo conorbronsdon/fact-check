@@ -1,0 +1,14 @@
+{
+  "draft": "drafts/tech-history.md",
+  "claims": [
+    {"key": "python-1991", "match": "Python was first released", "expect": ["verified"], "why": "Python 0.9.0, February 1991."},
+    {"key": "linux-1995", "match": "Linux followed in 1995", "expect": ["incorrect"], "why": "Torvalds announced Linux in August 1991 and released 0.01 in September 1991."},
+    {"key": "js-ten-days", "match": "ten days at Netscape", "expect": ["verified", "self-reported"], "why": "Brendan Eich's own account: about ten days, May 1995."},
+    {"key": "www-mit", "match": "while working at MIT", "expect": ["incorrect"], "why": "Composite: 1989 is right, but he was at CERN. He moved to MIT in 1994."},
+    {"key": "git-2005", "match": "created it in 2005", "expect": ["verified"], "why": "Git, April 2005."},
+    {"key": "knuth-quote", "match": "root of all evil", "expect": ["incorrect"], "why": "Attribution: Donald Knuth, 1974 ('Structured Programming with go to Statements')."},
+    {"key": "eiffel-1889", "match": "Eiffel Tower was completed", "expect": ["verified"], "why": "Completed 1889 for the Exposition Universelle."},
+    {"key": "everest-solar", "match": "tallest mountain in the solar system", "expect": ["incorrect"], "why": "Superlative: Olympus Mons on Mars is far taller."},
+    {"key": "so-84", "match": "84% of developers use AI tools", "expect": ["incorrect"], "why": "Population/wording: the 2025 survey's 84% is respondents using or planning to use AI tools."}
+  ]
+}

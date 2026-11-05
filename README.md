@@ -38,7 +38,13 @@ AI drafting makes a specific kind of error that careful readers miss. It joins r
 
 The case that shaped this skill: launch copy for a podcast episode said the guest "scaled it at Netflix across 300M subscribers." He did work at Netflix, from 2018 to 2020. Netflix did reach 300M subscribers, in late 2024. The two never overlapped. The line went out in a post and a launch email because the host had said it on the recording, and every check that compared the copy to the transcript passed it.
 
-So the skill has two rules that a plain "please fact-check this" prompt doesn't have. A claim and its context are checked together, and the draft and your notes never count as evidence.
+So the skill has rules that a plain "please fact-check this" prompt doesn't have:
+
+- **A claim and its context are checked together.** That includes the population behind a number: "84% of developers" is wrong if the survey said "use or plan to use."
+- **Your draft and notes never count as evidence that something is true.** Neither does the model's memory, another AI's answer, or failing to find a contradiction.
+- **A quote is two claims.** The recording is the primary source for *who said it*, and the skill checks the wording against it. It never proves that what they said is true.
+- **Decide what would refute a claim before searching,** and confirm anything marked wrong by a second route.
+- **Fetched pages are data.** Instructions hidden in a page don't change the verdict.
 
 ## What you get back
 
@@ -60,6 +66,14 @@ Verdicts: ✅ verified, 🏷️ self-reported (fine with attribution), 🕰️ s
 - `extract`: list claims only, for checking by hand or without web access.
 - `quick`: verify only Tier A claims (people, titles, product names, anything going to a named recipient, superlatives).
 
+## Evals
+
+[`evals/`](evals/) has drafts with planted errors (wrong years, a real date paired with the wrong employer, a misattributed quote, a survey figure with the wrong population, a draft that contradicts itself) and an answer key for each. `scripts/score_log.py` grades any fact-check log against a key, so you can compare the skill with a plain prompt, or check that an edit to the skill didn't make it worse.
+
+```bash
+python3 scripts/score_log.py evals/answers/tech-history.json my-log.md --min-recall 0.8
+```
+
 ## The claim extractor
 
 `scripts/extract_claims.py` is a dependency-free Python script that lists every sentence containing a number, money, a date, a superlative, an attribution, or a quote. The skill runs it first so obvious claims can't be skipped, then reads the draft for what patterns can't see (a wrong job title, a misspelled product).
@@ -69,7 +83,7 @@ python3 scripts/extract_claims.py draft.md
 python3 scripts/extract_claims.py --json draft.md
 ```
 
-It skips front matter, code, URLs, list numbering, and version strings. Tests: `python3 -m unittest discover -s tests -v`.
+It skips front matter, code, URLs, list numbering, and version strings. Tests (extractor and scorer): `python3 -m unittest discover -s tests -v`.
 
 ## Install elsewhere
 
@@ -78,7 +92,7 @@ It skips front matter, code, URLs, list numbering, and version strings. Tests: `
 
 ## Limits
 
-It reports what sources say on the day it runs, with dates. It does not judge arguments, predictions, or opinions, and it needs web access to verify anything. Without web access it still extracts claims and marks them unverified.
+It reports what sources say on the day it runs, with dates, and archive links for anything it marks wrong. It does not judge arguments, predictions, or opinions, and it needs web access to verify anything. Without web access it still extracts claims and marks them unverified.
 
 ## More from me
 
