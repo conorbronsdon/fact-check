@@ -1,0 +1,13 @@
+{
+  "name": "fact-check",
+  "description": "Verify every checkable claim in a draft before it ships: extract claims, try to refute each against primary sources, return a verdict log. Flags, never edits.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Conor Bronsdon"
+  },
+  "homepage": "https://github.com/conorbronsdon/fact-check",
+  "repository": "https://github.com/conorbronsdon/fact-check",
+  "license": "MIT",
+  "keywords": ["writing", "fact-checking", "verification", "publishing"],
+  "skills": ["./"]
+}

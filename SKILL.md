@@ -1,0 +1,126 @@
+---
+name: fact-check
+description: Verify every specific, checkable claim in a draft before it ships. Use when asked to "fact-check this," "is this right," "check these numbers," "verify this before I post," or before publishing an essay, newsletter, blog post, LinkedIn post, press release, talk track, launch email, or PR description. Extracts claims, tries to refute each one against primary sources, and returns a numbered log with a verdict per claim. Flags, never edits. Pairs with avoid-ai-writing (run this first, then polish).
+version: 0.1.0
+license: MIT
+compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor needs Python 3.9+ and no packages.
+metadata:
+  author: Conor Bronsdon
+  repository: https://github.com/conorbronsdon/fact-check
+  tags: writing editing fact-checking verification publishing
+  agentskills_spec: "1.0"
+---
+
+# Fact-Check
+
+A pre-publish truth pass. Extract every checkable claim in a draft, try to refute each one against a primary source, and return a numbered log the writer can act on in minutes. This skill checks truth only. Voice, flow, and grammar are a separate pass.
+
+AI drafting made this pass more necessary, not less. A model will write a plausible number, a real company, and a real person into one sentence that is false as a whole. The writer reads it, recognizes every part, and ships it.
+
+## Modes
+
+- `check` (default): full pass. Extract, verify, return the log.
+- `extract`: list the claims only, with no verification. Use it when web access is unavailable or the writer wants to check by hand.
+- `quick`: verify only the Tier A claims (see Step 3). Use it when time is short.
+
+## Step 1: Extract claims
+
+Read the draft and list every specific claim that can be right or wrong. Use these buckets:
+
+- **A. Identity**: names and their spelling, job titles, employers, who owns what.
+- **B. Proper nouns**: product, company, model, paper, report, event, and conference names.
+- **C. Numbers**: statistics, percentages, money, counts, growth rates, market sizes, benchmark scores, dates.
+- **D. Biography and history**: where someone worked and when, what they built, what happened and in what order.
+- **E. Superlatives and firsts**: "the first," "the only," "the largest," "the fastest." These are claims, and they are often wrong.
+- **F. Attributions**: direct quotes and paraphrases tied to a named person or source, and "according to" or "a study found" statements.
+
+If the bundled extractor is available, run it first as a floor, then read the draft yourself. The script catches surface patterns. You catch the rest.
+
+```bash
+python3 scripts/extract_claims.py draft.md          # markdown table
+python3 scripts/extract_claims.py --json draft.md   # machine-readable
+```
+
+Rules:
+
+- **Skip opinions, predictions, and the writer's own framing.** "This changes the economics" is a view. "Inference costs fell 80% in 2025" is a claim.
+- **A number and the context it sits in are one claim.** "Scaled it at Netflix to 300M subscribers" can be false as a whole even when Netflix, the person's tenure there, and the 300M figure are each real on their own. Check them together.
+- **Do not merge a claim across artifacts.** If the same claim appears in a blog post and in an email that was already sent, list both. Only one of them can still be fixed.
+- **Number the claims.** The numbers carry through to the log.
+
+## Step 2: Check internal consistency (no web needed)
+
+Before searching, compare the draft against itself and against any companion files the writer supplied (show notes, a pitch, an earlier version). Look for the same person, title, product, number, or date written two ways. Report each disagreement as **INCONSISTENT** and send it to Step 3 for an outside tiebreak. Do not settle it by trusting whichever version looks more official.
+
+## Step 3: Try to refute each claim
+
+Search for each claim. Your job is to **refute** it: find the source that shows it is wrong, stale, or unsupported. Only if you cannot refute it, report the primary source that supports it. Confirmation-seeking is how plausible errors survive several careful readers.
+
+Where to look, in order:
+
+1. The primary source: the paper itself, the filing, the earnings report, the company's own announcement or docs, the person's own profile.
+2. A dated report from a credible outlet that cites the primary source.
+3. Anything else, labeled as secondary.
+
+Do not cite an article that restates a number without linking the original. Authors often cite older data that has since been updated, or quote a summary that rounds or misstates the source.
+
+**The draft and the writer's notes are never evidence.** A transcript, a prep doc, or an earlier draft records what someone said, not whether it is true. If the claim came from what a speaker said on a recording, it still needs an outside source.
+
+**Tier the work when time is short:**
+
+| Tier | Contents |
+|---|---|
+| **A**: always | Claims about a named person; titles and employers; product and company names; any claim in something sent to a named recipient (an email, a pitch); superlatives. |
+| **B** | Numbers a company or person states about themselves. These need attribution ("the company says"), not independent proof. |
+| **C** | Everything else. |
+
+If your environment supports parallel subagents, give each one a claim (or 3 to 5 closely related claims) and launch them together. Give each subagent this brief:
+
+```text
+Claim: "<verbatim claim>"  (where it appears: <section>)
+Your job is to REFUTE this claim. Find the source that shows it is wrong,
+stale, or unsupported. Only if you cannot refute it, report the primary
+source that supports it. Never cite the draft or the writer's notes.
+If the supporting source is dated, report the date: a true-but-old figure
+is STALE. The default verdict is UNVERIFIED; failing to find a refutation
+is not verification.
+Return one line: verdict | one-sentence reason | source URL | source date
+```
+
+## Verdicts
+
+| Verdict | Meaning |
+|---|---|
+| ✅ **Verified** | An independent primary or credible source confirms it as written. |
+| 🏷️ **Self-reported** | The only source is the subject itself (a company's own metric, a person's own bio). Fine to publish with attribution. |
+| 🕰️ **Stale** | It was true, but a newer figure exists. Give the current one and its date. |
+| ⚠️ **Unverified** | Could not confirm or refute. Say what you searched and why it came up empty. |
+| ❌ **Incorrect** | A credible source contradicts it. Give the correct version and the source. |
+| 🔀 **Inconsistent** | The draft disagrees with itself or a companion file (Step 2), and no outside source settled it. |
+
+A half-right claim (right number, wrong attribution; right trend, old figure; real person, wrong years) is ❌ or 🕰️. Say exactly which part is off.
+
+## Step 4: Return the log
+
+Open with one headline sentence that leads with what needs action:
+
+> **14 claims: 10 ✅, 1 🏷️, 1 ⚠️, 2 ❌. Both ❌ are in the second paragraph: the funding round (#6) and the founder's prior employer (#7).**
+
+Then the table:
+
+| # | Claim (as written) | Verdict | Source / correction |
+|---|---|---|---|
+
+Rules for the log:
+
+- **Flag, never fix.** Do not edit the draft. The writer may have a source you could not find, or may be making a deliberate point.
+- **Make every fix one step.** A ❌ carries the correct figure and its source. A ⚠️ says what you searched.
+- **Put ❌ first in the headline.** Do not bury a wrong number under ten verified ones.
+- **Group a cluster of unverifiable claims** in one row with a note, rather than padding the table with fifteen ⚠️ rows.
+- **If everything checks out, say so plainly.** Do not invent doubt to look thorough.
+
+## What this skill does not do
+
+- It does not judge arguments, predictions, or opinions.
+- It does not edit voice or style. Run [avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) after this pass, not instead of it. Truth first, then polish.
+- It does not guarantee truth. It reports what sources say on the day it runs, with dates, so the writer can judge.
