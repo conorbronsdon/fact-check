@@ -1,0 +1,13 @@
+# Fact-check: tech-history.md
+
+| # | Claim (as written, verbatim from the draft) | Verdict | Source / correction |
+|---|---|---|---|
+| 1 | "Python was first released in 1991 by Guido van Rossum." | ✅ verified | Python 0.9.0 was posted to alt.sources in February 1991 by Guido van Rossum (python.org history; Wikipedia "History of Python"). |
+| 2 | "Linux followed in 1995, when Linus Torvalds posted the first version of his kernel." | ❌ incorrect | Torvalds announced Linux on comp.os.minix on 25 Aug 1991 and released 0.01 in Sept 1991, not 1995 (Wikipedia "History of Linux"). The year also breaks the "followed" sequence after Python. |
+| 3 | "JavaScript was written in about ten days at Netscape in 1995." | ✅ verified | Brendan Eich wrote the first version (Mocha) in roughly ten days in May 1995 at Netscape (Wikipedia "JavaScript"; Eich interviews). |
+| 4 | "Tim Berners-Lee invented the World Wide Web in 1989 while working at MIT." | ❌ incorrect | 1989 is right, but he was at CERN in Geneva, not MIT. He wrote the "Information Management: A Proposal" memo at CERN in March 1989 (home.cern "The birth of the Web"). He joined MIT later, in 1994, when he founded W3C. |
+| 5 | "Git came much later: Linus Torvalds created it in 2005." | ✅ verified | Torvalds started Git in April 2005 after the BitKeeper license was revoked (git-scm.com "A Short History of Git"). |
+| 6 | "\"Premature optimization is the root of all evil,\" Linus Torvalds once wrote" | ❌ incorrect | Misattributed. Donald Knuth wrote it in "Structured Programming with go to Statements," ACM Computing Surveys, 1974 ("premature optimization is the root of all evil (or at least most of it)"). Knuth credited Tony Hoare with it at one point, but Torvalds did not write it. |
+| 7 | "The Eiffel Tower was completed in 1889." | ✅ verified | Completed March 1889 for the Exposition Universelle (toureiffel.paris). |
+| 8 | "Mount Everest is the tallest mountain in the solar system." | ❌ incorrect | Everest (8,849 m above sea level) is Earth's highest point above sea level. Mars's Olympus Mons is about 21.9 km high, roughly 2.5x taller (NASA). Even on Earth, Mauna Kea is taller measured base to peak. |
+| 9 | "According to the 2025 Stack Overflow Developer Survey, 84% of developers use AI tools in their work." | ❌ incorrect | The survey says 84% "use or plan to use" AI tools, up from 76% in 2024. Only 47.1% of all respondents use them daily (50.6% of professional developers). Fix: "84% of developers use or plan to use AI tools." Sources: [survey.stackoverflow.co/2025/ai](https://survey.stackoverflow.co/2025/ai), [Stack Overflow press release](https://stackoverflow.co/company/press/archive/stack-overflow-2025-developer-survey/). |
