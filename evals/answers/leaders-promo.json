@@ -1,0 +1,11 @@
+{
+  "draft": "drafts/leaders-promo.md",
+  "claims": [
+    {"key": "nadella-2014", "match": "CEO since 2014", "expect": ["verified", "inconsistent"], "why": "Became CEO February 2014. The draft also says 2016, so flagging the pair is also correct."},
+    {"key": "nadella-2016", "match": "Microsoft CEO in 2016", "expect": ["incorrect", "inconsistent"], "why": "Internal inconsistency with the 2014 line; 2014 is correct."},
+    {"key": "huang-intel", "match": "after leaving Intel", "expect": ["incorrect"], "why": "Composite: Nvidia 1993 is right, but Huang came from LSI Logic (and AMD before that), not Intel."},
+    {"key": "pichai-chrome", "match": "Chrome team", "expect": ["verified"], "why": "Led Chrome product development; CEO of Google August 2015."},
+    {"key": "andreessen-2011", "match": "Software is eating the world", "expect": ["verified"], "why": "Wall Street Journal essay, August 2011."},
+    {"key": "so-2008", "match": "Stack Overflow was founded in 2008", "expect": ["verified"], "why": "Launched 2008 by Atwood and Spolsky."}
+  ]
+}
