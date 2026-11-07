@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-11-06)
 
 - First public version: claim extraction in six buckets, internal-consistency pass, refute-first verification with a subagent brief, six verdicts (verified, self-reported, stale, unverified, incorrect, inconsistent), and a headline-first log.
 - A quote is two claims: attribution (the recording or transcript is the primary source) and content (it never proves the content is true).

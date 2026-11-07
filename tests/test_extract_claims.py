@@ -24,7 +24,7 @@ class MustFire(unittest.TestCase):
         self.assertIn("percent", kinds("Churn dropped 3 percentage points."))
 
     def test_scale_and_conjunction_stay_one_claim(self):
-        found = extract("He scaled it at Netflix across 300M subscribers.")
+        found = extract("He scaled it at Acme across 300M subscribers.")
         self.assertEqual(len(found), 1)
         self.assertIn("scale", found[0]["kinds"])
 

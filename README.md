@@ -36,7 +36,7 @@ Works with Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, and anything that
 
 AI drafting makes a specific kind of error that careful readers miss. It joins real parts into a false whole: a real person, a real company, and a real number in one sentence that was never true. You recognize every part, so it reads as right.
 
-The case that shaped this skill: launch copy for a podcast episode said the guest "scaled it at Netflix across 300M subscribers." He did work at Netflix, from 2018 to 2020. Netflix did reach 300M subscribers, in late 2024. The two never overlapped. The line went out in a post and a launch email because the host had said it on the recording, and every check that compared the copy to the transcript passed it.
+The case that shaped this skill: launch copy for a podcast episode credited the guest with scaling a system at a household-name company to that company's current subscriber count. He had worked there, and the company did reach that number, but years after he left. The two never overlapped. The line went out in a post and a launch email because it had been said on the recording, and every check that compared the copy to the transcript passed it.
 
 So the skill has rules that a plain "please fact-check this" prompt doesn't have:
 
@@ -87,7 +87,12 @@ It skips front matter, code, URLs, list numbering, and version strings. Tests (e
 
 ## Install elsewhere
 
-- **Claude Code plugin:** this repo is a plugin (`.claude-plugin/plugin.json`). It is listed in the `conorbronsdon-skills` marketplace alongside avoid-ai-writing.
+- **Claude Code plugin:** this repo is its own plugin marketplace:
+
+  ```text
+  /plugin marketplace add conorbronsdon/fact-check
+  /plugin install fact-check@fact-check
+  ```
 - **Cursor, Codex, other agents:** copy the folder into your agent's skills directory, or paste `SKILL.md` into your rules or instructions.
 
 ## Limits
