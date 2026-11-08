@@ -37,7 +37,7 @@ WORD = re.compile(r"[+-]?(?=\d)[^\W_]+(?:['’][^\W_]+)*|[^\W_]+(?:['’][^\W_]+
 FENCE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
-EDIT_MARK = re.compile(r"\.\.\.|…|\[[^\]]*\]")
+EDIT_MARK = re.compile(r"\.(?:[ \t]*\.){2}|…|\[[^\]]*\]")
 SENTENCE_END = re.compile(r"[.!?]+[\"”'’)]*(?=\s)|\n")
 DEFAULT_THRESHOLD = 0.6
 
