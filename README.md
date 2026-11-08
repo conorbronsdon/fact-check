@@ -68,7 +68,7 @@ Verdicts: ✅ verified, 🏷️ self-reported (fine with attribution), 🕰️ s
 
 ## Evals
 
-[`evals/`](evals/) has drafts with planted errors (wrong years, a real date paired with the wrong employer, a misattributed quote, a survey figure with the wrong population, a draft that contradicts itself) and an answer key for each. `scripts/score_log.py` grades any fact-check log against a key, so you can compare the skill with a plain prompt, or check that an edit to the skill didn't make it worse.
+[`evals/`](evals/) has drafts with planted errors (wrong years, a real date paired with the wrong employer, a misattributed quote, a survey figure with the wrong population, a draft that contradicts itself, and drafts built from real pre-publish defects: stale valuations, wrong tenures, misheard names, title drift) and an answer key for each. [`PROOF.md`](PROOF.md) has every scored run so far, both arms. `scripts/score_log.py` grades any fact-check log against a key, so you can compare the skill with a plain prompt, or check that an edit to the skill didn't make it worse.
 
 ```bash
 python3 scripts/score_log.py evals/answers/tech-history.json my-log.md --min-recall 0.8

@@ -137,6 +137,24 @@ class EvalSet(unittest.TestCase):
             for c in key["claims"]:
                 self.assertEqual(draft.count(c["match"].lower()), 1, f"{path.name}: {c['key']}")
 
+    def test_every_key_entry_says_why(self):
+        for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
+            key = json.loads(path.read_text(encoding="utf-8"))
+            keys = [c["key"] for c in key["claims"]]
+            self.assertEqual(len(keys), len(set(keys)), f"{path.name}: duplicate key")
+            for c in key["claims"]:
+                self.assertTrue(c.get("why", "").strip(), f"{path.name}: {c['key']} has no why")
+
+    def test_matches_do_not_overlap_within_a_key(self):
+        # One log row per claim: if one match contains another, both keys
+        # would score the same row.
+        for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
+            matches = [c["match"].lower() for c in json.loads(path.read_text(encoding="utf-8"))["claims"]]
+            for a in matches:
+                for b in matches:
+                    if a != b:
+                        self.assertNotIn(a, b, f"{path.name}: '{a}' inside '{b}'")
+
 
 class CLI(unittest.TestCase):
     def run_cli(self, *args):

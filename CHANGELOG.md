@@ -13,4 +13,6 @@
 - A failed or malformed subagent result is ⚠️ "check did not complete," never a guessed verdict.
 - `score_log.py` reads the verdict named first in a cell, handles negation ("not verified") and qualifiers ("partially correct"), accepts split, grouped, and bold row numbers and escaped pipes, counts links only in the source column, and exits 2 on a malformed or empty answer key.
 - `evals/` with planted-error drafts and answer keys; `scripts/score_log.py` grades a log against a key and counts verdicts that link a source.
+- Four eval drafts built from defect types in real pre-publish fact-check logs, anonymized: wrong employer years and a figure tied to the wrong years (`career-years`), stale valuations and user counts next to a dated figure that is not stale (`funding-roundup`), dropped survey populations and a forecast reported as a finding (`survey-stats`), and title drift, a guest figure above the company's own, and names misheard by an automatic transcript (`episode-recap`). Not yet run.
+- `PROOF.md`: one command re-scores the saved 2026-11-05 run logs, both arms, including the drafts where the skill showed no lift.
 - `scripts/extract_claims.py`: dependency-free extractor that lists sentences containing numbers, money, dates, superlatives, attributions, and quotes. Tested with must-fire and must-not-fire cases.

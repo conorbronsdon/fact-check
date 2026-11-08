@@ -1,0 +1,10 @@
+{
+  "draft": "drafts/funding-roundup.md",
+  "claims": [
+    {"key": "databricks-38", "match": "valued at $38 billion", "expect": ["stale", "incorrect"], "why": "Stale valuation presented as current. $38B was the August 2021 Series H. Databricks raised at $43B in September 2023 and $62B in December 2024, and has raised since."},
+    {"key": "chatgpt-100m", "match": "100 million weekly active users", "expect": ["stale", "incorrect"], "why": "True when OpenAI said it (DevDay, November 2023), stale in the present tense. OpenAI later reported 200M weekly users (August 2024) and 400M (February 2025), and higher since."},
+    {"key": "stripe-2021", "match": "it was valued at $95 billion", "expect": ["verified"], "why": "Stripe raised $600M at a $95B valuation in March 2021. A figure dated to the round it came from is history, not a stale current figure. Marking it 🕰️ is a false alarm, even though Stripe's later valuations differ."},
+    {"key": "nvidia-1t", "match": "passed $1 trillion in market value in 2023", "expect": ["verified"], "why": "Nvidia's market value first reached $1 trillion on May 30, 2023."},
+    {"key": "anthropic-2021", "match": "Anthropic was founded in 2021", "expect": ["verified"], "why": "Founded in 2021 by former OpenAI staff, including Dario and Daniela Amodei."}
+  ]
+}

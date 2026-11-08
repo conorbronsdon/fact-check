@@ -1,0 +1,9 @@
+{
+  "draft": "drafts/survey-stats.md",
+  "claims": [
+    {"key": "so-2023-70", "match": "Seventy percent of developers now use AI tools", "expect": ["incorrect"], "why": "Population and wording: the 2023 survey's 70% is respondents 'using or planning to use' AI tools. Only 44% said they were using them."},
+    {"key": "so-2024-76", "match": "76% of respondents said they were using or planning to use", "expect": ["verified"], "why": "The 2024 survey: 76% of respondents using or planning to use AI tools, up from 70%. Same survey family as the error above, quoted with its own population and wording. Flagging it is a false alarm."},
+    {"key": "gartner-40", "match": "40% of agentic AI projects fail", "expect": ["incorrect"], "why": "Gartner (press release, June 25, 2025) predicted that over 40% of agentic AI projects will be canceled by the end of 2027. A forecast, not a finding, and 'canceled', not 'fail'."},
+    {"key": "github-100m", "match": "100 million developers", "expect": ["verified"], "why": "GitHub announced 100 million developers on January 25, 2023."}
+  ]
+}
