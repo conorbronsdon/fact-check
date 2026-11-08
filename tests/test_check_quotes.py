@@ -100,6 +100,12 @@ class MustFire(unittest.TestCase):
         r = one('"The temperature was -10 degrees yesterday"', source.replace("-10", "10"))
         self.assertEqual(r["status"], "near")
 
+    def test_dropped_minus_sign_after_comma_is_near(self):
+        source = "SAM: temps of -10,-20 and -30 here.\n"
+        r = one('"temps of -10, 20 and -30 here"', source)
+        self.assertEqual(r["status"], "near")
+        self.assertIn("[--20-]", r["diff"])
+
     def test_cli_exit_1_on_near_or_absent(self):
         code, out, _ = run(str(DRAFT), "--source", str(TRANSCRIPT))
         self.assertEqual(code, 1)
@@ -147,6 +153,12 @@ class MustNotFire(unittest.TestCase):
         r = one('"It hit -10 degrees, and from 2018-2020 we ran a well-known stack"', source)
         self.assertEqual(r["status"], "verbatim")
         r = one('"from 2018 to 2020 we ran a well known stack"', "SAM: from 2018 to 2020 we ran a well-known stack.")
+        self.assertEqual(r["status"], "verbatim")
+
+    def test_signs_after_commas_and_thousands_separators_still_verbatim(self):
+        r = one('"temps of -10, -20 and -30 here"', "SAM: temps of -10,-20 and -30 here.")
+        self.assertEqual(r["status"], "verbatim")
+        r = one('"it grew 1,000 users and 2,500 more"', "SAM: it grew 1,000 users and 2,500 more.")
         self.assertEqual(r["status"], "verbatim")
 
     def test_two_periods_are_not_an_ellipsis(self):
