@@ -37,6 +37,7 @@ WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
 FENCE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
+EDIT_MARK = re.compile(r"\.\.\.|…|\[[^\]]*\]")
 SENTENCE_END = re.compile(r"[.!?]+[\"”'’)]*(?=\s)|\n")
 DEFAULT_THRESHOLD = 0.6
 
@@ -203,9 +204,12 @@ def check(draft: str, source: str, threshold: float = DEFAULT_THRESHOLD) -> list
         q_tokens = tokens(item["quote"])
         q_words = [t[0] for t in q_tokens]
         res = {"id": idx, "line": item["line"], "quote": item["quote"]}
+        edited = bool(EDIT_MARK.search(item["quote"]))
+        if edited:
+            res["edited"] = True
         at = find_contiguous(q_words, src_words)
         if at >= 0:
-            res.update(status="verbatim", score=1.0)
+            res.update(status="near" if edited else "verbatim", score=1.0)
             lo, hi = at, at + len(q_words)
         else:
             score, lo, hi = best_window(q_words, src_words)
@@ -236,6 +240,8 @@ def to_text(results: list[dict]) -> str:
         if r["status"] == "absent":
             out.append(f"  no source passage is close (best similarity {r['score']:.2f})")
         else:
+            if r.get("edited"):
+                out.append("  the draft marks an edit (ellipsis or brackets): check the cut keeps the meaning")
             if r["status"] == "near":
                 out.append(f"  closest source text (line {r['source_line']}, similarity {r['score']:.2f}):")
                 out.append(f"    \"{r['source_text']}\"")

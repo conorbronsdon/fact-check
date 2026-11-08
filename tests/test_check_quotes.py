@@ -60,6 +60,33 @@ class MustFire(unittest.TestCase):
         self.assertIn("[-quiet-]", r["diff"])
         self.assertIn("{+silent+}", r["diff"])
 
+    def test_ellipsis_is_near_even_when_the_words_match(self):
+        for quote in ('"the pager... finally went quiet for a month"',
+                      '"the pager … finally went quiet for a month"'):
+            r = one(quote)
+            self.assertEqual(r["status"], "near", quote)
+            self.assertTrue(r["edited"])
+            self.assertIn("pager finally went quiet", r["source_text"])
+
+    def test_bracketed_insertion_is_near_even_when_the_words_match(self):
+        r = one('"the [pager] finally went quiet for a month"')
+        self.assertEqual(r["status"], "near")
+        self.assertTrue(r["edited"])
+
+    def test_ellipsis_over_a_cut_is_near(self):
+        r = one('"We moved everything ... the pager finally went quiet"')
+        self.assertEqual(r["status"], "near")
+        self.assertIn("[-to one queue and-]", r["diff"])
+
+    def test_cli_exit_1_on_ellipsis(self):
+        with tempfile.TemporaryDirectory() as d:
+            draft, source = Path(d, "draft.md"), Path(d, "source.md")
+            source.write_text("the pager finally went quiet\n", encoding="utf-8")
+            draft.write_text('"the pager... finally went quiet"\n', encoding="utf-8")
+            code, out, _ = run(str(draft), "--source", str(source))
+            self.assertEqual(code, 1)
+            self.assertIn("marks an edit", out)
+
     def test_cli_exit_1_on_near_or_absent(self):
         code, out, _ = run(str(DRAFT), "--source", str(TRANSCRIPT))
         self.assertEqual(code, 1)
@@ -96,6 +123,11 @@ class MustNotFire(unittest.TestCase):
         self.assertEqual(r["status"], "verbatim")
         r = one("“we’re small on purpose, honestly”", "DANA: We're small on purpose. Honestly.")
         self.assertEqual(r["status"], "verbatim")
+
+    def test_trailing_period_is_not_an_edit_mark(self):
+        r = one('"the pager finally went quiet for a month."')
+        self.assertEqual(r["status"], "verbatim")
+        self.assertNotIn("edited", r)
 
     def test_short_quotes_are_not_checked(self):
         self.assertEqual(find_quotes('They called it "the queue" and moved on.'), [])
