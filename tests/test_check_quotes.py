@@ -62,6 +62,7 @@ class MustFire(unittest.TestCase):
 
     def test_ellipsis_is_near_even_when_the_words_match(self):
         for quote in ('"the pager... finally went quiet for a month"',
+                      '"the pager . . . finally went quiet for a month"',
                       '"the pager … finally went quiet for a month"'):
             r = one(quote)
             self.assertEqual(r["status"], "near", quote)
@@ -86,6 +87,18 @@ class MustFire(unittest.TestCase):
             code, out, _ = run(str(draft), "--source", str(source))
             self.assertEqual(code, 1)
             self.assertIn("marks an edit", out)
+
+    def test_dropped_minus_sign_is_near(self):
+        source = "HOST: How cold was it?\n\nSAM: The temperature was -10 degrees yesterday.\n"
+        for quote in ('"The temperature was 10 degrees yesterday"',
+                      '"The temperature was +10 degrees yesterday"'):
+            r = one(quote, source)
+            self.assertEqual(r["status"], "near", quote)
+            self.assertIn("[--10-]", r["diff"])
+        r = one('"The temperature was 10 degrees yesterday"', source.replace("-10", "10"))
+        self.assertEqual(r["status"], "verbatim")
+        r = one('"The temperature was -10 degrees yesterday"', source.replace("-10", "10"))
+        self.assertEqual(r["status"], "near")
 
     def test_cli_exit_1_on_near_or_absent(self):
         code, out, _ = run(str(DRAFT), "--source", str(TRANSCRIPT))
@@ -128,6 +141,17 @@ class MustNotFire(unittest.TestCase):
         r = one('"the pager finally went quiet for a month."')
         self.assertEqual(r["status"], "verbatim")
         self.assertNotIn("edited", r)
+
+    def test_minus_sign_and_hyphens_still_verbatim(self):
+        source = "SAM: It hit −10 degrees, and from 2018-2020 we ran a well-known stack.\n"
+        r = one('"It hit -10 degrees, and from 2018-2020 we ran a well-known stack"', source)
+        self.assertEqual(r["status"], "verbatim")
+        r = one('"from 2018 to 2020 we ran a well known stack"', "SAM: from 2018 to 2020 we ran a well-known stack.")
+        self.assertEqual(r["status"], "verbatim")
+
+    def test_two_periods_are_not_an_ellipsis(self):
+        r = one('"the pager finally went quiet for a month.."')
+        self.assertEqual(r["status"], "verbatim")
 
     def test_short_quotes_are_not_checked(self):
         self.assertEqual(find_quotes('They called it "the queue" and moved on.'), [])
