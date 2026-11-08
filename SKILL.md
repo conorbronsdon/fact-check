@@ -3,7 +3,7 @@ name: fact-check
 description: Verify every specific, checkable claim in a draft before it ships. Use when asked to "fact-check this," "is this right," "check these numbers," "verify this before I post," or before publishing an essay, newsletter, blog post, LinkedIn post, press release, talk track, launch email, or PR description. Extracts claims, tries to refute each one against primary sources, and returns a numbered log with a verdict per claim. Flags, never edits. Pairs with avoid-ai-writing (run this first, then polish).
 version: 0.1.0
 license: MIT
-compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor needs Python 3.9+ and no packages.
+compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor and quote checker need Python 3.9+ and no packages.
 metadata:
   author: Conor Bronsdon
   repository: https://github.com/conorbronsdon/fact-check
@@ -75,6 +75,15 @@ Do not cite an article that restates a number without linking the original. Auth
 **The draft and the writer's notes are never evidence that a claim is true.** A transcript, a prep doc, or an earlier draft records what someone said, not whether it is true. If the claim came from what a speaker said on a recording, it still needs an outside source.
 
 The one exception is attribution. For "X said Y," the recording or full transcript *is* the primary source, and the best one: check the quote word for word against it, and check that the surrounding context doesn't change its meaning. A recording proves who said what. It never proves that what they said is true. (The case that shaped this rule: a guest's bio line matched the episode transcript perfectly because the host said it on air. It was still false.)
+
+If you have the transcript as a file and the bundled quote checker is available, run it before reading the quotes yourself:
+
+```bash
+python3 scripts/check_quotes.py draft.md --source transcript.md          # report
+python3 scripts/check_quotes.py draft.md --source transcript.md --json   # machine-readable
+```
+
+It reports each quote of 12+ characters as `verbatim`, `near` (with the closest transcript text and a word-level diff), or `absent`, and prints the transcript sentence before and after each match so you can check that context doesn't change the meaning. It ignores case, punctuation, and line wrapping. It exits 1 if any quote is `near` or `absent`. A `near` quote is not word for word: read the diff and the context before you give a verdict. An `absent` quote is not in this transcript; it may come from another source. The checker matches words only. Who is speaking, and whether what they said is true, are still yours to check.
 
 **Not evidence, ever:**
 
