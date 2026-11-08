@@ -14,7 +14,9 @@ for it in the source after normalizing case, punctuation, and whitespace.
 Each match is printed with the source sentence before and after it, since
 context can change what a quote means. It checks wording only: it does not
 say who is speaking or whether what they said is true. A quote with an
-ellipsis or a bracketed insertion reports as near; read the diff.
+ellipsis ("...", ". . .", "…") or a bracketed insertion reports as near; read
+the diff. A leading sign is part of a number, so "-10" or "+10" never matches
+"10"; "−" (U+2212) counts as "-", and a hyphen inside "2018-2020" is not a sign.
 
 Usage:
   python3 scripts/check_quotes.py draft.md --source transcript.md
@@ -33,7 +35,7 @@ import re
 import sys
 
 QUOTE = re.compile(r"[\"“]((?:[^\"“”\n]|\n(?![ \t]*\n)){12,}?)[\"”]")
-WORD = re.compile(r"[+-]?(?=\d)[^\W_]+(?:['’][^\W_]+)*|[^\W_]+(?:['’][^\W_]+)*")
+WORD = re.compile(r"(?:(?<![\w.,])[+\-−](?=\d))?[^\W_]+(?:['’][^\W_]+)*")
 FENCE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
@@ -71,7 +73,7 @@ def tokens(text: str) -> list[tuple[str, int, int]]:
     """(normalized word, start, end) for each word in text."""
     out = []
     for m in WORD.finditer(text):
-        norm = m.group(0).lower().replace("’", "").replace("'", "")
+        norm = m.group(0).lower().replace("’", "").replace("'", "").replace("−", "-")
         out.append((norm, m.start(), m.end()))
     return out
 
