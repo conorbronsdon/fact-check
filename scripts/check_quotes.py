@@ -33,7 +33,7 @@ import re
 import sys
 
 QUOTE = re.compile(r"[\"“]((?:[^\"“”\n]|\n(?![ \t]*\n)){12,}?)[\"”]")
-WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
+WORD = re.compile(r"[+-]?(?=\d)[^\W_]+(?:['’][^\W_]+)*|[^\W_]+(?:['’][^\W_]+)*")
 FENCE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
