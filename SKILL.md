@@ -44,7 +44,7 @@ python3 scripts/extract_claims.py --json draft.md   # machine-readable
 Rules:
 
 - **Skip opinions, predictions, and the writer's own framing.** "This changes the economics" is a view. "Inference costs fell 80% in 2025" is a claim.
-- **A number and the context it sits in are one claim.** "Scaled it at Netflix to 300M subscribers" can be false as a whole even when Netflix, the person's tenure there, and the 300M figure are each real on their own. Check them together.
+- **A number and the context it sits in are one claim.** "Scaled it at Acme to 42M subscribers" can be false as a whole even when the company, the person's tenure there, and the 42M figure are each real on their own (the company reached 42M years after they left). Check them together.
 - **A number and its population are one claim.** "84% of developers use AI tools" is wrong if the survey said 84% "use or plan to use," or asked only professional developers, or only its own readers. Write down who was counted, when, and what exactly was measured, then check all of it.
 - **A quote is two claims.** That the person said it (attribution) and that what they said is true (content). Check them separately. A true quote of a false statement is still a false statement in your draft when the draft uses it as support. It is fine to publish only if the draft also says the statement is wrong or disputed.
 - **Do not merge a claim across artifacts.** If the same claim appears in a blog post and in an email that was already sent, list both. Only one of them can still be fixed.

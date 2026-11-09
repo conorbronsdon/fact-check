@@ -11,6 +11,8 @@ This repo ships one skill, `SKILL.md`, plus an optional claim extractor in `scri
 - `tests/test_score_log.py`: scorer tests, plus a check that every answer-key `match` string appears exactly once in its draft.
 - `evals/`: drafts with planted errors (`drafts/`) and answer keys (`answers/`). Agents running an eval must not read `answers/`. Use only stable, well-documented facts so keys don't go stale.
 - `examples/draft.md`: a sample draft for trying the skill and extractor. It contains deliberately unchecked claims; do not "fix" them.
+- `docs/social-preview.png`: GitHub social preview, 1280x640. A static image; replace it by uploading a new PNG in repo Settings too.
+- `.claude-plugin/marketplace.json`: single-plugin marketplace so `/plugin marketplace add conorbronsdon/fact-check` works.
 - `.claude-plugin/plugin.json`: Claude Code plugin manifest. Its `version` must match the `SKILL.md` frontmatter `version`.
 
 ## Rules

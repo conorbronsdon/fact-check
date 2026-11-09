@@ -1,7 +1,7 @@
 # Fact-check: episode-launch.md
 
-Draft: /home/user/fact-check/evals/drafts/episode-launch.md
-Reference transcript: /home/user/fact-check/evals/drafts/episode-launch.transcript.md (it notes that the guest and company are invented, so the transcript is the only source for guest-specific claims)
+Draft: evals/drafts/episode-launch.md
+Reference transcript: evals/drafts/episode-launch.transcript.md (it notes that the guest and company are invented, so the transcript is the only source for guest-specific claims)
 
 | # | Claim (as written, verbatim from the draft) | Verdict | Source / correction |
 |---|---|---|---|

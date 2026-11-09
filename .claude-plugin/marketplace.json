@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "fact-check",
+  "description": "Verify every checkable claim in a draft before it ships.",
+  "owner": {
+    "name": "Conor Bronsdon"
+  },
+  "plugins": [
+    {
+      "name": "fact-check",
+      "source": "./",
+      "description": "Extract every checkable claim, try to refute each against primary sources, and return a verdict per claim. Flags, never edits.",
+      "category": "productivity",
+      "keywords": ["writing", "fact-checking", "verification", "publishing"]
+    }
+  ]
+}
