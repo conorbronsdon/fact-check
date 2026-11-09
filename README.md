@@ -36,7 +36,7 @@ Works with Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, and anything that
 
 AI drafting makes a specific kind of error that careful readers miss. It joins real parts into a false whole: a real person, a real company, and a real number in one sentence that was never true. You recognize every part, so it reads as right.
 
-The case that shaped this skill: launch copy for a podcast episode credited the guest with scaling a system at a household-name company to that company's current subscriber count. He had worked there, and the company did reach that number, but years after he left. The two never overlapped. The line went out in a post and a launch email because it had been said on the recording, and every check that compared the copy to the transcript passed it.
+One failure mode shaped this skill: launch copy combined a person's past role with a company's later growth. Both facts were real, but they never overlapped. A transcript check confirmed that the claim had been said; it did not establish that the claim was true.
 
 So the skill has rules that a plain "please fact-check this" prompt doesn't have:
 
