@@ -83,7 +83,7 @@ python3 scripts/check_quotes.py draft.md --source transcript.md          # repor
 python3 scripts/check_quotes.py draft.md --source transcript.md --json   # machine-readable
 ```
 
-It reports each quote of 12+ characters as `verbatim`, `near` (with the closest transcript text and a word-level diff), or `absent`, and prints the transcript sentence before and after each match so you can check that context doesn't change the meaning. It ignores case, punctuation, and line wrapping. It exits 1 if any quote is `near` or `absent`. A `near` quote is not word for word: read the diff and the context before you give a verdict. An `absent` quote is not in this transcript; it may come from another source. The checker matches words only. Who is speaking, and whether what they said is true, are still yours to check.
+It reports each quote of 12+ characters as `verbatim`, `near` (with the closest transcript text and a word-level diff), or `absent`, and prints the transcript sentence before and after each match so you can check that context doesn't change the meaning. It ignores case, most punctuation, and line wrapping, but keeps numeric decimal separators and percent signs. It exits 1 if any quote is `near` or `absent`. A `near` quote is not word for word: read the diff and the context before you give a verdict. An `absent` quote is not in this transcript; it may come from another source. The checker matches words only. Who is speaking, and whether what they said is true, are still yours to check.
 
 **Not evidence, ever:**
 
