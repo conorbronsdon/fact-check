@@ -88,6 +88,14 @@ class MustFire(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("marks an edit", out)
 
+    def test_numeric_units_and_decimal_separator_are_not_discarded(self):
+        for quote, source in [
+            ('"revenue grew 10 this quarter"', 'Revenue grew 10% this quarter.'),
+            ('"revenue was 1,5 million today"', 'Revenue was 1.5 million today.'),
+        ]:
+            self.assertNotEqual(one(quote, source)["status"], "verbatim")
+        self.assertEqual(one('"revenue grew 10% this quarter"', 'Revenue grew 10% this quarter.')["status"], "verbatim")
+
     def test_dropped_minus_sign_is_near(self):
         source = "HOST: How cold was it?\n\nSAM: The temperature was -10 degrees yesterday.\n"
         for quote in ('"The temperature was 10 degrees yesterday"',

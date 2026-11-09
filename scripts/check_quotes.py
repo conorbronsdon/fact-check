@@ -4,7 +4,8 @@
 For "X said Y," the recording or transcript is the primary source. This
 script finds each double-quoted span in the draft (straight or curly
 quotes, 12+ characters, the same threshold as extract_claims.py) and looks
-for it in the source after normalizing case, punctuation, and whitespace.
+for it in the source after normalizing case, most punctuation, and whitespace. Numeric decimal separators
+and percent signs are retained.
 
   verbatim  the words appear in the source, in order, with nothing changed
   near      the closest source passage is similar but not the same; it is
@@ -35,7 +36,7 @@ import re
 import sys
 
 QUOTE = re.compile(r"[\"“]((?:[^\"“”\n]|\n(?![ \t]*\n)){12,}?)[\"”]")
-WORD = re.compile(r"(?:(?<![\w.])[+\-−](?=\d))?[^\W_]+(?:['’][^\W_]+)*")
+WORD = re.compile(r"(?:(?<![\w.])[+\-−](?=\d))?\d+(?:[.,]\d+)*%?|[^\W_]+(?:['’][^\W_]+)*")
 FENCE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
