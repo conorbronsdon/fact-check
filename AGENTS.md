@@ -8,7 +8,7 @@ This repo ships one skill, `SKILL.md`, plus an optional claim extractor in `scri
 - `scripts/extract_claims.py`: stdlib-only extractor the skill runs as a floor before reading the draft.
 - `tests/test_extract_claims.py`: must-fire and must-not-fire cases for the extractor. Run with `python3 -m unittest discover -s tests -v`.
 - `scripts/check_quotes.py`: stdlib-only quote checker. Reports eligible draft quotes as verbatim, near, absent, or ambiguous in a transcript, with context. Exit 1 when any result needs review, 2 on bad input.
-- `tests/test_check_quotes.py`: must-fire and must-not-fire cases for the quote checker, including the episode-launch misquote.
+- `tests/test_check_quotes.py` and `tests/test_quote_redesign.py`: must-fire and must-not-fire cases for the quote checker, including the episode-launch misquote.
 - `scripts/score_log.py`: stdlib-only scorer that grades a fact-check log against an answer key. Exit 1 below `--min-recall`, 2 on bad input.
 - `tests/test_score_log.py`: scorer tests, plus a check that every answer-key `match` string appears exactly once in its draft.
 - `evals/`: drafts with planted errors (`drafts/`) and answer keys (`answers/`). Agents running an eval must not read `answers/`. Use only stable, well-documented facts so keys don't go stale.

@@ -39,6 +39,45 @@ class QuoteBoundaries(unittest.TestCase):
                 self.assertIn('ambiguous', [r['status'] for r in check(draft, 'A source.')])
         self.assertEqual(check('`a complete code span`', 'A source.'), [])
 
+    def test_markup_inside_a_quote_never_erases_words_and_passes(self):
+        for embedded in ('`not`', '<!-- not -->'):
+            with self.subTest(embedded=embedded):
+                draft = 'She said "the fix is ' + embedded + ' ready for production".'
+                results = check(draft, 'SAM: the fix is ready for production.')
+                self.assertIn('ambiguous', [r['status'] for r in results])
+                self.assertNotIn('verbatim', [r['status'] for r in results])
+        self.assertEqual(check('Use `not ready` in docs. "the fix is ready for production"',
+                               'the fix is ready for production')[0]['status'], 'verbatim')
+
+    def test_stray_backticks_do_not_hide_later_paragraph(self):
+        draft = 'It`s live.\n\nShe said "we never lost a single customer record".\n\nThat`s it.'
+        results = check(draft, 'we never lost a single customer record')
+        self.assertIn('ambiguous', [r['status'] for r in results])
+        self.assertIn('verbatim', [r['status'] for r in results])
+
+    def test_suspicious_initial_horizontal_rule_requires_review(self):
+        results = check('---\nHe said "we never lost a single customer record".\n---',
+                        'we never lost a single customer record')
+        self.assertIn('ambiguous', [r['status'] for r in results])
+        self.assertEqual(check('---\ntitle: "a long front matter title"\n---\nNo quotes.',
+                               'we never lost a single customer record'), [])
+
+    def test_simple_prose_colon_is_not_a_speaker_turn(self):
+        source = 'SAM: we tried it and\nthe short answer is: it worked.'
+        self.assertEqual(check('"we tried it and the short answer is: it worked"', source)[0]['status'], 'verbatim')
+
+    def test_utf8_input_and_output_in_ascii_environment(self):
+        with tempfile.TemporaryDirectory() as d:
+            source = Path(d, 'source.md')
+            source.write_text('The temperature was \u221210 degrees yesterday.', encoding='utf-8')
+            import os
+            env = dict(os.environ, PYTHONIOENCODING='ascii')
+            run = subprocess.run([sys.executable, str(ROOT/'scripts/check_quotes.py'), '-', '--source', str(source), '--json'],
+                                 input='"The temperature was \u221210 degrees yesterday."'.encode('utf-8'),
+                                 capture_output=True, env=env)
+            self.assertEqual(run.returncode, 0, run.stderr.decode('utf-8', errors='replace'))
+            self.assertEqual(__import__('json').loads(run.stdout.decode('utf-8'))[0]['status'], 'verbatim')
+
     def test_unclosed_fence_requires_review(self):
         self.assertTrue(any(r["status"] == "ambiguous" for r in check('```\n"hidden long quote"', 'A source.')))
 

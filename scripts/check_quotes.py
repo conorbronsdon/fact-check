@@ -36,7 +36,7 @@ import unicodedata
 WORD = re.compile(r"(?<![\w.])[+\-\u2212]?(?:\d+(?:[.,]\d+)*|\.\d+)(?:[ \t\u00a0]*%)?|[^\W\d_]+(?:['\u2019][^\W\d_]+)*|[^\s]", re.UNICODE)
 FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 EDIT_MARK = re.compile(r"\.(?:[ \t]*\.){2}|\u2026|\[[^\]]*\]")
-SPEAKER = re.compile(r"(?m)^[ \t]*[A-Za-z][A-Za-z0-9 _.'-]{0,40}:[ \t]+")
+SPEAKER = re.compile(r"(?m)^[ \t]*[A-Z][A-Za-z0-9_.'-]*(?:[ \t]+[A-Z][A-Za-z0-9_.'-]*){0,2}:[ \t]+")
 SENTENCE_END = re.compile(r"[.!?]+[\"\u201d'\u2019)]*(?=\s|$)|\n[ \t]*\n")
 DEFAULT_THRESHOLD = 0.6
 
@@ -54,6 +54,10 @@ def strip_markup(text: str, diagnostics: list | None = None) -> str:
         if close is None:
             diagnostics.append({"line": 1, "reason": "Unclosed front matter."})
         else:
+            content = [line.strip() for line in lines[1:close]
+                       if line.strip() and not line.lstrip().startswith("#")]
+            if content and not re.match(r"^[A-Za-z_][\w.-]*\s*:", content[0]):
+                diagnostics.append({"line": 1, "reason": "Initial horizontal rule may not be front matter."})
             for i in range(close + 1):
                 lines[i] = blank(re.match(r"[\s\S]*", lines[i]))
     fence = None
@@ -96,10 +100,13 @@ def strip_markup(text: str, diagnostics: list | None = None) -> str:
             break
         a, opener_end = pos + m.start(), pos + m.end()
         marker = text[a:opener_end]
-        close = re.search(r"(?<!`)" + re.escape(marker) + r"(?!`)", text[opener_end:])
+        paragraph_end = re.search(r"\n[ \t\r]*\n", text[opener_end:])
+        limit = opener_end + paragraph_end.start() if paragraph_end else len(text)
+        close = re.search(r"(?<!`)" + re.escape(marker) + r"(?!`)", text[opener_end:limit])
         if not close:
             diagnostics.append({"line": text.count("\n", 0, a) + 1, "reason": "Unclosed inline code."})
-            break
+            pos = opener_end
+            continue
         b = opener_end + close.end()
         for i in range(a, b):
             if chars[i] != "\n":
@@ -150,7 +157,14 @@ def scan_quotes(draft: str) -> tuple[list[dict], list[dict]]:
             diagnostics.append({"line": text.count("\n", 0, a) + 1, "reason": "Mixed or nested quote delimiters."})
             opening = None
             continue
-        quote = " ".join(text[a + 1:i].split())
+        raw = draft[a + 1:i]
+        masked = text[a + 1:i]
+        if any(not original.isspace() and hidden == " " for original, hidden in zip(raw, masked)):
+            diagnostics.append({"line": text.count("\n", 0, a) + 1,
+                                "reason": "Markup inside a quote requires review."})
+            opening = None
+            continue
+        quote = " ".join(masked.split())
         if len(quote) >= 12 and tokens(quote):
             found.append({"line": text.count("\n", 0, a) + 1, "quote": quote})
         opening = None
@@ -179,14 +193,6 @@ def sentence_spans(text: str) -> list[tuple[int, int]]:
     bounds.update(m.start() for m in SPEAKER.finditer(text))
     ordered = sorted(bounds)
     return [(a, b) for a, b in zip(ordered, ordered[1:]) if text[a:b].strip()]
-
-
-def find_contiguous(needle: list[str], hay: list[str]) -> int:
-    n = len(needle)
-    for i in range(len(hay) - n + 1):
-        if hay[i:i + n] == needle:
-            return i
-    return -1
 
 
 def best_window(q: list[str], s: list[str]) -> tuple[float, int, int]:
@@ -391,11 +397,13 @@ def main(argv: list[str] | None = None) -> int:
                     help=f"similarity at or above which a quote is near, not absent (default {DEFAULT_THRESHOLD})")
     ap.add_argument("--json", action="store_true", help="emit JSON")
     args = ap.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     if not 0 < args.threshold <= 1:
         print("error: --threshold must be in (0, 1]", file=sys.stderr)
         return 2
     try:
-        draft = sys.stdin.read() if args.path == "-" else open(args.path, encoding="utf-8").read()
+        draft = sys.stdin.buffer.read().decode("utf-8") if args.path == "-" else open(args.path, encoding="utf-8").read()
         source = open(args.source, encoding="utf-8").read()
     except (OSError, UnicodeDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
