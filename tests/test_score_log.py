@@ -161,6 +161,17 @@ class EvalSet(unittest.TestCase):
         rows[1]["verdict"] = "unverified"
         self.assertTrue({c["key"]: c for c in score(key, rows)["claims"]}["fernwick-coreweave"]["ok"])
 
+    def test_title_drift_requires_inconsistent_without_a_truth_tiebreak(self):
+        key = json.loads((ROOT / "evals/answers/episode-recap.json").read_text(encoding="utf-8"))
+        title = next(c for c in key["claims"] if c["key"] == "title-drift")
+        row = {"claim": title["match"], "verdict": "inconsistent", "linked": False}
+        result = {c["key"]: c for c in score(key, [row])["claims"]}["title-drift"]
+        self.assertTrue(result["ok"])
+        row["verdict"] = "incorrect"
+        result = {c["key"]: c for c in score(key, [row])["claims"]}["title-drift"]
+        self.assertFalse(result["ok"])
+        self.assertTrue(result["false_alarm"])
+
     def test_baseline_prompt_exposes_all_verdicts_needed_by_new_keys(self):
         prompt_path = ROOT / "evals/baseline-prompt.txt"
         self.assertTrue(prompt_path.is_file(), "the baseline prompt must be saved for reproducible runs")

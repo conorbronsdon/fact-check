@@ -55,7 +55,7 @@ This is the draft memory can't help with, and it is where the skill made a diffe
 
 ## Next runs
 
-The four newer drafts have no runs yet. Use `baseline-prompt.txt` for the baseline arm; give both arms the same model, tools, web access, draft and companions, and record their exact prompts, model IDs and tool access. The title-drift key accepts only `inconsistent`: `incorrect` is counted as a false alarm because the supplied files do not establish which title is right. Before the README states any lift, run each arm at least 3 times per draft and report the spread (min, median, max), not the best run. Save logs as `evals/runs/<date>/<arm>-<draft>-<n>.md`, then score them all:
+The four newer drafts have no runs yet. Use `baseline-prompt.txt` for the baseline arm; give both arms the same model, tools, web access, draft and companions, and record their exact prompts, model IDs and tool access. The title-drift key accepts only `inconsistent`: `incorrect` is counted as a false alarm because the supplied files do not establish which title is right. Before the README states any lift, run each arm at least 3 times per draft and report the spread (min, median, max), not the best run. Save logs as `evals/runs/<date>/<arm>-<draft>-<n>.md`, then score them all. This loop is for numbered future runs; use the command in `PROOF.md` for the unnumbered historical files:
 
 ```bash
 # Set this to the actual run directory; filenames must be <arm>-<draft>-<n>.md.

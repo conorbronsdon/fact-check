@@ -23,7 +23,7 @@ for arm in base skill; do for d in tech-history leaders-promo episode-launch; do
 
 ## What this does and does not show
 
-- **No lift on famous facts.** On `tech-history` and `leaders-promo` both arms caught every planted error with no false alarms. A strong model knows these facts. The saved skill logs have a source URL for every verdict; the plain logs have one of 15. The historical plain prompt did not explicitly request a source URL, so this link-count difference is confounded by the prompt format and does not establish source quality.
+- **No lift on famous facts.** On `tech-history` and `leaders-promo` both arms caught every planted error with no false alarms. A strong model knows these facts. For these two drafts, the saved skill logs have a source URL for all 15 verdicts; the plain logs have one of 15. The historical plain prompt did not explicitly request a source URL, so this link-count difference is confounded by the prompt format and does not establish source quality.
 - **The episode-launch logs differ in overclaims.** On `episode-launch`, the plain run marked two claims ✅ that only the guest's own words support. The skill run kept them ⚠️.
 - **One run per arm is a direction, not a measurement.** No spread is reported because there is none to report. This page will not state a lift until each arm has at least 3 runs per draft.
 - **The logs' source URLs were not re-checked** after the run. A link counts as present, not as correct.
