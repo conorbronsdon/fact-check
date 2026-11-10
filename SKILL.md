@@ -1,7 +1,7 @@
 ---
 name: fact-check
 description: Verify every specific, checkable claim in a draft before it ships. Use when asked to "fact-check this," "is this right," "check these numbers," "verify this before I post," or before publishing an essay, newsletter, blog post, LinkedIn post, press release, talk track, launch email, or PR description. Extracts claims, tries to refute each one against primary sources, and returns a numbered log with a verdict per claim. Flags, never edits. Pairs with avoid-ai-writing (run this first, then polish).
-version: 0.1.0
+version: 0.2.0
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor and quote checker need Python 3.9+ and no packages.
 metadata:
@@ -83,7 +83,7 @@ python3 scripts/check_quotes.py draft.md --source transcript.md          # repor
 python3 scripts/check_quotes.py draft.md --source transcript.md --json   # machine-readable
 ```
 
-It reports each quote of 12+ characters as `verbatim`, `near` (with the closest transcript text and a word-level diff), or `absent`, and prints the transcript sentence before and after each match so you can check that context doesn't change the meaning. It ignores case, most punctuation, and line wrapping, but keeps numeric decimal separators and percent signs. It exits 1 if any quote is `near` or `absent`. A `near` quote is not word for word: read the diff and the context before you give a verdict. An `absent` quote is not in this transcript; it may come from another source. The checker matches words only. Who is speaking, and whether what they said is true, are still yours to check.
+The checker considers paired double-quoted spans of 12+ characters. It reports `verbatim` for one matching passage, `near` for a similar passage or marked edit, `absent` when no sufficiently similar passage was found, and `ambiguous` for malformed input or multiple exact passages. It exits 1 whenever a result needs review. Case, punctuation, and numeric symbols are significant; line wrapping, apostrophe style, Unicode minus, and spacing before percent signs are normalized. It displays nearby source text, but its sentence and speaker boundaries are heuristics: it splits searches at blank lines and simple `NAME:` headers, so other transcript formats may not identify speaker turns. Read the full source to check context and attribution. A `near` match is not word for word, and `absent` is not proof that the quote does not appear in the source. No eligible quotes found is not proof that the draft has no quotations: only supported double-quoted spans are scanned. The checker cannot establish who spoke or whether their statement is true.
 
 **Not evidence, ever:**
 

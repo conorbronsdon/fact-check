@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- Add an optional quote checker with conservative matching, source context, and explicit review for malformed or ambiguous input.
+
 ## 0.1.0 (unreleased)
 
 - First public version: claim extraction in six buckets, internal-consistency pass, refute-first verification with a subagent brief, six verdicts (verified, self-reported, stale, unverified, incorrect, inconsistent), and a headline-first log.

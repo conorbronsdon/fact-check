@@ -44,7 +44,7 @@ class MustFire(unittest.TestCase):
         self.assertEqual(r["status"], "near")
         self.assertEqual(r["quote"], "Most outages start in config, not code,")
         self.assertIn("most of our outages started in config", r["source_text"])
-        self.assertIn("[-of our-]", r["diff"])
+        self.assertIn("[-most of our-]", r["diff"])
         self.assertEqual(r["context"]["before"], "Small on purpose.")
         self.assertIn("most of our outages", r["context"]["sentence"])
         self.assertEqual(r["context"]["after"], "That was the surprise.")
@@ -77,7 +77,8 @@ class MustFire(unittest.TestCase):
     def test_ellipsis_over_a_cut_is_near(self):
         r = one('"We moved everything ... the pager finally went quiet"')
         self.assertEqual(r["status"], "near")
-        self.assertIn("[-to one queue and-]", r["diff"])
+        self.assertIn("to one queue", r["diff"])
+        self.assertIn("and-]", r["diff"])
 
     def test_cli_exit_1_on_ellipsis(self):
         with tempfile.TemporaryDirectory() as d:
@@ -94,7 +95,7 @@ class MustFire(unittest.TestCase):
             ('"revenue was 1,5 million today"', 'Revenue was 1.5 million today.'),
         ]:
             self.assertNotEqual(one(quote, source)["status"], "verbatim")
-        self.assertEqual(one('"revenue grew 10% this quarter"', 'Revenue grew 10% this quarter.')["status"], "verbatim")
+        self.assertEqual(one('"Revenue grew 10% this quarter"', 'Revenue grew 10% this quarter.')["status"], "verbatim")
 
     def test_dropped_minus_sign_is_near(self):
         source = "HOST: How cold was it?\n\nSAM: The temperature was -10 degrees yesterday.\n"
@@ -118,7 +119,7 @@ class MustFire(unittest.TestCase):
         code, out, _ = run(str(DRAFT), "--source", str(TRANSCRIPT))
         self.assertEqual(code, 1)
         self.assertIn("NEAR", out)
-        self.assertIn("[-of our-]", out)
+        self.assertIn("[-most of our-]", out)
         self.assertIn("before: Small on purpose.", out)
 
     def test_cli_exit_2_on_bad_input(self):
@@ -145,10 +146,12 @@ class MustNotFire(unittest.TestCase):
         r = one('"the pager finally went quiet"', "SAM: and the pager\nfinally went\nquiet.\n")
         self.assertEqual(r["status"], "verbatim")
 
-    def test_case_punctuation_and_apostrophes_are_still_verbatim(self):
+    def test_case_and_punctuation_changes_require_review(self):
         r = one('"We moved everything to one queue -- and the pager finally went quiet!"')
-        self.assertEqual(r["status"], "verbatim")
-        r = one("“we’re small on purpose, honestly”", "DANA: We're small on purpose. Honestly.")
+        self.assertEqual(r["status"], "near")
+        r = one("\u201cwe\u2019re small on purpose, honestly\u201d", "DANA: We're small on purpose. Honestly.")
+        self.assertEqual(r["status"], "near")
+        r = one("\u201cWe\u2019re small on purpose, honestly\u201d", "DANA: We're small on purpose, honestly.")
         self.assertEqual(r["status"], "verbatim")
 
     def test_trailing_period_is_not_an_edit_mark(self):
@@ -161,7 +164,7 @@ class MustNotFire(unittest.TestCase):
         r = one('"It hit -10 degrees, and from 2018-2020 we ran a well-known stack"', source)
         self.assertEqual(r["status"], "verbatim")
         r = one('"from 2018 to 2020 we ran a well known stack"', "SAM: from 2018 to 2020 we ran a well-known stack.")
-        self.assertEqual(r["status"], "verbatim")
+        self.assertEqual(r["status"], "near")
 
     def test_signs_after_commas_and_thousands_separators_still_verbatim(self):
         r = one('"temps of -10, -20 and -30 here"', "SAM: temps of -10,-20 and -30 here.")
@@ -171,7 +174,8 @@ class MustNotFire(unittest.TestCase):
 
     def test_two_periods_are_not_an_ellipsis(self):
         r = one('"the pager finally went quiet for a month.."')
-        self.assertEqual(r["status"], "verbatim")
+        self.assertEqual(r["status"], "near")
+        self.assertNotIn("edited", r)
 
     def test_short_quotes_are_not_checked(self):
         self.assertEqual(find_quotes('They called it "the queue" and moved on.'), [])
