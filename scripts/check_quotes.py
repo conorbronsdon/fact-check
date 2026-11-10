@@ -36,7 +36,7 @@ import unicodedata
 WORD = re.compile(r"(?<![\w.])[+\-\u2212]?(?:\d+(?:[.,]\d+)*|\.\d+)(?:[ \t\u00a0]*%)?|[^\W\d_]+(?:['\u2019][^\W\d_]+)*|[^\s]", re.UNICODE)
 FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 EDIT_MARK = re.compile(r"\.(?:[ \t]*\.){2}|\u2026|\[[^\]]*\]")
-SPEAKER = re.compile(r"(?m)^[ \t]*[A-Z][A-Za-z0-9_.'-]*(?:[ \t]+[A-Z][A-Za-z0-9_.'-]*){0,2}:[ \t]+")
+SPEAKER = re.compile(r"(?m)^[ \t]*[A-Z][A-Za-z0-9_.'-]*(?:[ \t]+(?:[A-Z][A-Za-z0-9_.'-]*|[0-9]+)){0,6}:[ \t]+")
 SENTENCE_END = re.compile(r"[.!?]+[\"\u201d'\u2019)]*(?=\s|$)|\n[ \t]*\n")
 DEFAULT_THRESHOLD = 0.6
 
@@ -54,9 +54,22 @@ def strip_markup(text: str, diagnostics: list | None = None) -> str:
         if close is None:
             diagnostics.append({"line": 1, "reason": "Unclosed front matter."})
         else:
-            content = [line.strip() for line in lines[1:close]
+            content = [line.rstrip("\r\n") for line in lines[1:close]
                        if line.strip() and not line.lstrip().startswith("#")]
-            if content and not re.match(r"^[A-Za-z_][\w.-]*\s*:", content[0]):
+            suspicious = False
+            for line in content:
+                if line[0].isspace():
+                    continue
+                entry = re.match(r"^[A-Za-z_][\w.-]*\s*:\s*(.*)$", line)
+                if not entry:
+                    suspicious = True
+                    break
+                value = entry.group(1).strip()
+                if any(c in value for c in ('"', '\u201c', '\u201d')) and not (
+                        len(value) >= 2 and value[0] == value[-1] == '"'):
+                    suspicious = True
+                    break
+            if suspicious:
                 diagnostics.append({"line": 1, "reason": "Initial horizontal rule may not be front matter."})
             for i in range(close + 1):
                 lines[i] = blank(re.match(r"[\s\S]*", lines[i]))
@@ -108,6 +121,11 @@ def strip_markup(text: str, diagnostics: list | None = None) -> str:
             pos = opener_end
             continue
         b = opener_end + close.end()
+        if (a > 0 and opener_end < len(text) and text[a - 1].isalnum()
+                and text[opener_end].isalnum()
+                and any(c in text[opener_end:b] for c in ('"', '\u201c', '\u201d'))):
+            diagnostics.append({"line": text.count("\n", 0, a) + 1,
+                                "reason": "Possible stray backtick hides a quote."})
         for i in range(a, b):
             if chars[i] != "\n":
                 chars[i] = " "
@@ -403,8 +421,8 @@ def main(argv: list[str] | None = None) -> int:
         print("error: --threshold must be in (0, 1]", file=sys.stderr)
         return 2
     try:
-        draft = sys.stdin.buffer.read().decode("utf-8") if args.path == "-" else open(args.path, encoding="utf-8").read()
-        source = open(args.source, encoding="utf-8").read()
+        draft = sys.stdin.buffer.read().decode("utf-8-sig") if args.path == "-" else open(args.path, encoding="utf-8-sig").read()
+        source = open(args.source, encoding="utf-8-sig").read()
     except (OSError, UnicodeDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

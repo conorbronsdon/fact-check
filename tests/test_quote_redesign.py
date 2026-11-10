@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from check_quotes import check, find_quotes  # noqa: E402
+from check_quotes import check, find_quotes, source_regions  # noqa: E402
 
 
 class QuoteBoundaries(unittest.TestCase):
@@ -77,6 +77,40 @@ class QuoteBoundaries(unittest.TestCase):
                                  capture_output=True, env=env)
             self.assertEqual(run.returncode, 0, run.stderr.decode('utf-8', errors='replace'))
             self.assertEqual(__import__('json').loads(run.stdout.decode('utf-8'))[0]['status'], 'verbatim')
+
+    def test_mixed_front_matter_does_not_hide_a_quote(self):
+        for draft in ('---\ntitle: Launch\nShe said "we never lost a single customer record".\n---',
+                      '---\nNote: she said "we never lost a single customer record".\n---'):
+            with self.subTest(draft=draft):
+                self.assertIn('ambiguous', [r['status'] for r in check(draft, 'A source.')])
+        self.assertEqual(check('---\ntitle: "a normal front matter title"\n---', 'A source.'), [])
+
+    def test_stray_backticks_within_paragraph_require_review(self):
+        draft = 'It`s live; she said "we never lost a single customer record" and that`s it.'
+        self.assertIn('ambiguous', [r['status'] for r in check(draft, 'A source.')])
+        self.assertEqual(check('Use `print("a long code string")` here.', 'A source.'), [])
+
+    def test_numbered_and_long_speaker_headers_preserve_boundaries(self):
+        for header in ('Speaker 2:', 'JAMES VAN DER MEER:'):
+            source = 'HOST: We shipped it.\n' + header + ' it is safe to deploy today.'
+            self.assertEqual(len(source_regions(source)), 2)
+            result = check('"it is safe to deploy today"', source)[0]
+            self.assertEqual(result['status'], 'verbatim')
+            self.assertTrue(result['context']['sentence'].startswith(header))
+        self.assertEqual(check('"we tried it and the short answer is: it worked"',
+                               'SAM: we tried it and\nthe short answer is: it worked.')[0]['status'], 'verbatim')
+
+    def test_utf8_bom_on_both_files_and_stdin(self):
+        with tempfile.TemporaryDirectory() as d:
+            draft, source = Path(d, 'draft.md'), Path(d, 'source.md')
+            draft.write_text('---\ntitle: "a normal front matter title"\n---\n"the system is safe to deploy"', encoding='utf-8-sig')
+            source.write_text('SAM: the system is safe to deploy', encoding='utf-8-sig')
+            args = [sys.executable, str(ROOT/'scripts/check_quotes.py')]
+            by_file = subprocess.run(args + [str(draft), '--source', str(source), '--json'], capture_output=True)
+            by_stdin = subprocess.run(args + ['-', '--source', str(source), '--json'], input=draft.read_bytes(), capture_output=True)
+            for result in (by_file, by_stdin):
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(len(__import__('json').loads(result.stdout)), 1)
 
     def test_unclosed_fence_requires_review(self):
         self.assertTrue(any(r["status"] == "ambiguous" for r in check('```\n"hidden long quote"', 'A source.')))
