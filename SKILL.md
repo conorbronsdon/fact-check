@@ -1,7 +1,7 @@
 ---
 name: fact-check
 description: Verify every specific, checkable claim in a draft before it ships. Use when asked to "fact-check this," "is this right," "check these numbers," "verify this before I post," or before publishing an essay, newsletter, blog post, LinkedIn post, press release, talk track, launch email, or PR description. Extracts claims, tries to refute each one against primary sources, and returns a numbered log with a verdict per claim. Flags, never edits. Pairs with avoid-ai-writing (run this first, then polish).
-version: 0.1.0
+version: 0.1.1
 license: MIT
 compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor needs Python 3.9+ and no packages.
 metadata:
@@ -34,12 +34,16 @@ Read the draft and list every specific claim that can be right or wrong. Use the
 - **E. Superlatives and firsts**: "the first," "the only," "the largest," "the fastest." These are claims, and they are often wrong.
 - **F. Attributions**: direct quotes and paraphrases tied to a named person or source, and "according to" or "a study found" statements.
 
-If the bundled extractor is available, run it first as a floor, then read the draft yourself. The script catches surface patterns. You catch the rest.
+If the bundled extractor is available, run it first as a floor, then read the draft yourself. The script catches surface patterns. You catch the rest. Resolve the extractor inside the directory containing this `SKILL.md`, not the draft's project directory; otherwise a same-named project script could run instead. Pass the actual draft path separately.
+
+In Claude Code, use the skill directory substitution (the draft path here is relative to the current working directory):
 
 ```bash
-python3 scripts/extract_claims.py draft.md          # markdown table
-python3 scripts/extract_claims.py --json draft.md   # machine-readable
+python3 "${CLAUDE_SKILL_DIR}/scripts/extract_claims.py" draft.md          # markdown table
+python3 "${CLAUDE_SKILL_DIR}/scripts/extract_claims.py" --json draft.md   # machine-readable
 ```
+
+In another agent, resolve `scripts/extract_claims.py` against this skill's installed directory and invoke that path. When running manually from the fact-check repository root, `python3 scripts/extract_claims.py /path/to/draft.md` also works.
 
 Rules:
 

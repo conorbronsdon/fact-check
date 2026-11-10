@@ -76,7 +76,9 @@ python3 scripts/score_log.py evals/answers/tech-history.json my-log.md --min-rec
 
 ## The claim extractor
 
-`scripts/extract_claims.py` is a dependency-free Python script that lists every sentence containing a number, money, a date, a superlative, an attribution, or a quote. The skill runs it first so obvious claims can't be skipped, then reads the draft for what patterns can't see (a wrong job title, a misspelled product).
+`scripts/extract_claims.py` is a dependency-free Python script that lists every sentence containing a number, money, a date, a superlative, an attribution, or a quote. When available, the skill runs it first so obvious claims can't be skipped, then reads the draft for what patterns can't see (a wrong job title, a misspelled product).
+
+From the fact-check repository root, pass the path to your draft:
 
 ```bash
 python3 scripts/extract_claims.py draft.md

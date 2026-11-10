@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (unreleased)
+
+- Resolve the optional extractor from the installed skill directory when checking a draft in another project.
+
 ## 0.1.0 (unreleased)
 
 - First public version: claim extraction in six buckets, internal-consistency pass, refute-first verification with a subagent brief, six verdicts (verified, self-reported, stale, unverified, incorrect, inconsistent), and a headline-first log.
