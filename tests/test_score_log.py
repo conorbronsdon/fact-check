@@ -170,6 +170,11 @@ class EvalSet(unittest.TestCase):
         self.assertIn(prefix, prompt)
         labels = {part.strip(" .\n") for part in prompt.split(prefix, 1)[1].split(",")}
         self.assertEqual(labels, required)
+        needed = set()
+        for path in (ROOT / "evals" / "answers").glob("*.json"):
+            key = json.loads(path.read_text(encoding="utf-8"))
+            needed.update(v for claim in key["claims"] for v in claim["expect"])
+        self.assertLessEqual(needed, labels)
         for verdict in labels:
             self.assertEqual(verdict_of(verdict), verdict)
 
@@ -178,10 +183,10 @@ class EvalSet(unittest.TestCase):
         # would score the same row.
         for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
             matches = [c["match"].lower() for c in json.loads(path.read_text(encoding="utf-8"))["claims"]]
-            for a in matches:
-                for b in matches:
-                    if a != b:
-                        self.assertNotIn(a, b, f"{path.name}: '{a}' inside '{b}'")
+            for i, a in enumerate(matches):
+                for b in matches[i + 1:]:
+                    self.assertNotIn(a, b, f"{path.name}: '{a}' inside '{b}'")
+                    self.assertNotIn(b, a, f"{path.name}: '{b}' inside '{a}'")
 
 
 class CLI(unittest.TestCase):
