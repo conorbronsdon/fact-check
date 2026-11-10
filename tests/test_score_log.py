@@ -137,6 +137,68 @@ class EvalSet(unittest.TestCase):
             for c in key["claims"]:
                 self.assertEqual(draft.count(c["match"].lower()), 1, f"{path.name}: {c['key']}")
 
+    def test_every_key_entry_says_why(self):
+        for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
+            key = json.loads(path.read_text(encoding="utf-8"))
+            keys = [c["key"] for c in key["claims"]]
+            self.assertEqual(len(keys), len(set(keys)), f"{path.name}: duplicate key")
+            for c in key["claims"]:
+                self.assertTrue(c.get("why", "").strip(), f"{path.name}: {c['key']} has no why")
+
+    def test_coreweave_description_and_invented_customer_are_scored_separately(self):
+        key = json.loads((ROOT / "evals/answers/episode-recap.json").read_text(encoding="utf-8"))
+        provider = next((c for c in key["claims"] if c["key"] == "coreweave"), None)
+        customer = next((c for c in key["claims"] if c["key"] == "fernwick-coreweave"), None)
+        self.assertIsNotNone(provider)
+        self.assertIsNotNone(customer)
+        rows = [{"claim": provider["match"], "verdict": "verified", "linked": True},
+                {"claim": customer["match"], "verdict": "verified", "linked": True}]
+        result = score(key, rows)
+        claims = {c["key"]: c for c in result["claims"]}
+        self.assertTrue(claims["coreweave"]["ok"])
+        self.assertFalse(claims["fernwick-coreweave"]["ok"])
+        self.assertTrue(claims["fernwick-coreweave"]["overclaim"])
+        rows[1]["verdict"] = "unverified"
+        self.assertTrue({c["key"]: c for c in score(key, rows)["claims"]}["fernwick-coreweave"]["ok"])
+
+    def test_title_drift_requires_inconsistent_without_a_truth_tiebreak(self):
+        key = json.loads((ROOT / "evals/answers/episode-recap.json").read_text(encoding="utf-8"))
+        title = next(c for c in key["claims"] if c["key"] == "title-drift")
+        row = {"claim": title["match"], "verdict": "inconsistent", "linked": False}
+        result = {c["key"]: c for c in score(key, [row])["claims"]}["title-drift"]
+        self.assertTrue(result["ok"])
+        row["verdict"] = "incorrect"
+        result = {c["key"]: c for c in score(key, [row])["claims"]}["title-drift"]
+        self.assertFalse(result["ok"])
+        self.assertTrue(result["false_alarm"])
+
+    def test_baseline_prompt_exposes_all_verdicts_needed_by_new_keys(self):
+        prompt_path = ROOT / "evals/baseline-prompt.txt"
+        self.assertTrue(prompt_path.is_file(), "the baseline prompt must be saved for reproducible runs")
+        prompt = prompt_path.read_text(encoding="utf-8").lower()
+        required = {"verified", "self-reported", "stale", "unverified", "incorrect", "inconsistent"}
+        prefix = "use one of these verdicts: "
+        self.assertIn(prefix, prompt)
+        labels = {part.strip(" .\n") for part in prompt.split(prefix, 1)[1].split(",")}
+        self.assertEqual(labels, required)
+        needed = set()
+        for path in (ROOT / "evals" / "answers").glob("*.json"):
+            key = json.loads(path.read_text(encoding="utf-8"))
+            needed.update(v for claim in key["claims"] for v in claim["expect"])
+        self.assertLessEqual(needed, labels)
+        for verdict in labels:
+            self.assertEqual(verdict_of(verdict), verdict)
+
+    def test_matches_do_not_overlap_within_a_key(self):
+        # One log row per claim: if one match contains another, both keys
+        # would score the same row.
+        for path in sorted((ROOT / "evals" / "answers").glob("*.json")):
+            matches = [c["match"].lower() for c in json.loads(path.read_text(encoding="utf-8"))["claims"]]
+            for i, a in enumerate(matches):
+                for b in matches[i + 1:]:
+                    self.assertNotIn(a, b, f"{path.name}: '{a}' inside '{b}'")
+                    self.assertNotIn(b, a, f"{path.name}: '{b}' inside '{a}'")
+
 
 class CLI(unittest.TestCase):
     def run_cli(self, *args):

@@ -1,0 +1,1 @@
+Fact-check this draft. Return one row per claim in a Markdown table with columns: number, claim as written, verdict, source URL (or none). Use one of these verdicts: verified, self-reported, stale, unverified, incorrect, inconsistent.

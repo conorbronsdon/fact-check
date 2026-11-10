@@ -1,0 +1,11 @@
+{
+  "draft": "drafts/career-years.md",
+  "claims": [
+    {"key": "netflix-tenure", "match": "ran the data platform team at Netflix from 2018 to 2020", "expect": ["self-reported", "unverified"], "why": "Invented speaker: no source outside the draft. Marking it verified means the writer's bio was treated as evidence."},
+    {"key": "netflix-300m", "match": "300 million subscribers", "expect": ["incorrect"], "why": "Number and context are one claim. Netflix reported 139.3M paid memberships at the end of 2018, 167.1M at the end of 2019 and 203.7M at the end of 2020. It first passed 300M in Q4 2024 (301.6M, shareholder letter, January 2025). The figure is real; the years it is tied to are not."},
+    {"key": "cook-13", "match": "13 years at Apple", "expect": ["verified"], "why": "Cook joined Apple in March 1998 and became CEO on August 24, 2011."},
+    {"key": "pichai-15", "match": "15 years at Google", "expect": ["incorrect"], "why": "Wrong tenure: Pichai joined Google in 2004 and became CEO in 2015, about 11 years. The CEO year is right; the span is not."},
+    {"key": "sandberg-decade", "match": "a decade at Google", "expect": ["incorrect"], "why": "Wrong tenure: Sandberg joined Google in late 2001 and left for Facebook in March 2008, about six and a half years."},
+    {"key": "dean-1999", "match": "Jeff Dean joined Google in 1999", "expect": ["verified"], "why": "Dean joined Google in mid-1999."}
+  ]
+}
