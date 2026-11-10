@@ -10,7 +10,7 @@ Drafts with planted errors, an answer key for each, and a scorer. Use them to ch
 | `drafts/career-years.md` | 3 of 6 claims, plus 1 that only the writer supports | Two wrong tenures (right CEO year, wrong span), a real subscriber figure tied to the wrong years, and an invented speaker's bio that must not be marked ✅ |
 | `drafts/funding-roundup.md` | 2 of 5 claims | Two changing figures presented as current (a 2021 valuation, a 2023 user count), next to a valuation dated to its own round that must not be marked 🕰️ |
 | `drafts/survey-stats.md` | 2 of 4 claims | A survey figure with the population and wording dropped, a forecast reported as a finding, and a same-survey figure quoted correctly that must not be flagged |
-| `drafts/episode-recap.md` + `episode-recap.transcript.md` + `episode-recap.notes.md` | 4 of 7 claims, plus a title drift (🔀 only, so it counts toward agreement, not recall) and 1 that only the guest supports | Title drift against the tracker, a guest title written two ways, a guest's figure ten times the company's own published one, two names copied from an automatic transcript, and one name the draft spelled right where the transcript did not |
+| `drafts/episode-recap.md` + `episode-recap.transcript.md` + `episode-recap.notes.md` | 4 of 8 claims, plus a title drift (🔀 only, so it counts toward agreement, not recall) and 2 that only the guest supports | Title drift against the tracker, a guest title written two ways, a guest's figure ten times the company's own published one, two names copied from an automatic transcript, and one name the draft spelled right where the transcript did not |
 
 The last four drafts come from defect types found in a podcast's real pre-publish fact-check logs: wrong employer years in a speaker bio, a subscriber count from after the guest's tenure, a valuation from an old round, a survey denominator dropped, a misheard company name copied from the transcript, a guest's figure larger than the employer's own, and an episode title that drifted between the tracker and the copy. Names, companies and figures are swapped for invented ones wherever the error doesn't depend on a real public fact. Where it does, the key uses a well-documented public figure instead of the original.
 
@@ -29,13 +29,13 @@ python3 scripts/score_log.py evals/answers/tech-history.json log.md
 
 It prints planted errors caught, recall, false alarms, and agreement with the key, then one line for each claim that disagrees with the key.
 
-3. For a baseline, run the same draft with a plain prompt ("fact-check this, one row per claim, ✅/⚠️/❌") and score that log the same way.
+3. For new baseline runs, give the same draft and companion files with the plain prompt saved in `baseline-prompt.txt`; it lists the same six verdict labels as the skill without supplying the skill rules. Score the log the same way. The 2026-11-05 historical baseline used a three-label prompt, so those scores are not directly comparable to new runs using the six-label prompt.
 
 `--min-recall 0.8` makes the scorer exit 1 below that recall, so it can gate a change. The claim cell must quote the draft text; the scorer matches each key entry by substring.
 
 ## First run (2026-11-05)
 
-One run each, same model, both drafts:
+One run each on both drafts; the run author reports the same model in both arms. The saved logs do not record model identity, full prompts or tool traces:
 
 | | Planted errors caught | False alarms | Verdicts with a source link | Web searches |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@ This is the draft memory can't help with, and it is where the skill made a diffe
 
 ## Next runs
 
-The four newer drafts have no runs yet. Before the README states any lift, run each arm at least 3 times per draft and report the spread (min, median, max), not the best run. Save logs as `evals/runs/<date>/<arm>-<draft>-<n>.md`, then score them all:
+The four newer drafts have no runs yet. Use `baseline-prompt.txt` for the baseline arm and give both arms the same draft and companions. Before the README states any lift, run each arm at least 3 times per draft and report the spread (min, median, max), not the best run. Save logs as `evals/runs/<date>/<arm>-<draft>-<n>.md`, then score them all:
 
 ```bash
 for f in evals/runs/<date>/*.md; do

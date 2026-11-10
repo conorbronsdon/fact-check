@@ -10,7 +10,7 @@ for arm in base skill; do for d in tech-history leaders-promo episode-launch; do
 
 ## Result (runs from 2026-11-05, one run per arm)
 
-`base` is a plain prompt ("fact-check this, one row per claim, ✅/⚠️/❌"). `skill` is the same model given `SKILL.md`. Neither could read `evals/answers/`.
+`base` is a plain prompt ("fact-check this, one row per claim, ✅/⚠️/❌"). The run author reports that `skill` used the same model with `SKILL.md` and that neither arm could read `evals/answers/`. The saved logs do not record model identity, full prompts or tool traces, so those execution details cannot be independently reconstructed from the logs. Future baseline runs use `evals/baseline-prompt.txt` with all six verdict labels; their results are not directly comparable to this historical three-label baseline.
 
 | Draft | Arm | Planted errors caught | False alarms | Overclaims | Agreement with key | Verdicts with a source link |
 |---|---|---:|---:|---:|---:|---:|

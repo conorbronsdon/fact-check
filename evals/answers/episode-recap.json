@@ -7,7 +7,8 @@
     {"key": "requests-2b", "match": "2 billion requests a day", "expect": ["inconsistent", "incorrect"], "why": "Guest claim larger than the company's own published figure: she said about two billion on tape, and Fernwick's own page gives 200 million, a tenth of that. The transcript proves she said it, not that it is true."},
     {"key": "nemotron", "match": "Nematron", "expect": ["incorrect"], "why": "Misheard name copied from the automatic transcript. Nvidia's open model family is Nemotron."},
     {"key": "kyndryl", "match": "Kindrel", "expect": ["incorrect"], "why": "Misheard name copied from the automatic transcript. IBM's managed infrastructure business, spun off in November 2021, is Kyndryl. The year is right; the name is not."},
-    {"key": "coreweave", "match": "CoreWeave, the GPU cloud provider", "expect": ["verified", "self-reported", "unverified"], "why": "The draft corrected the transcript's 'Core Weave'. CoreWeave is a GPU cloud provider, so the name and description are right; that Fernwick rents from it is only the guest's word. Flagging the spelling ❌ is a false alarm."},
+    {"key": "coreweave", "match": "CoreWeave is a GPU cloud provider", "expect": ["verified", "unverified"], "why": "The draft corrected the transcript's 'Core Weave'. CoreWeave is a GPU cloud provider; flagging the spelling as incorrect is a false alarm."},
+    {"key": "fernwick-coreweave", "match": "Fernwick rents GPUs from CoreWeave", "expect": ["self-reported", "unverified"], "why": "Only the invented guest's statement supports the customer relationship. A source confirming CoreWeave's business does not independently verify this relationship."},
     {"key": "thirty-days", "match": "30 days without a human", "expect": ["self-reported", "unverified"], "why": "Only the guest's statement supports it. The draft attributes it ('She says'), which is right; marking it verified is an overclaim."}
   ]
 }

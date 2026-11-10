@@ -145,6 +145,34 @@ class EvalSet(unittest.TestCase):
             for c in key["claims"]:
                 self.assertTrue(c.get("why", "").strip(), f"{path.name}: {c['key']} has no why")
 
+    def test_coreweave_description_and_invented_customer_are_scored_separately(self):
+        key = json.loads((ROOT / "evals/answers/episode-recap.json").read_text(encoding="utf-8"))
+        provider = next((c for c in key["claims"] if c["key"] == "coreweave"), None)
+        customer = next((c for c in key["claims"] if c["key"] == "fernwick-coreweave"), None)
+        self.assertIsNotNone(provider)
+        self.assertIsNotNone(customer)
+        rows = [{"claim": provider["match"], "verdict": "verified", "linked": True},
+                {"claim": customer["match"], "verdict": "verified", "linked": True}]
+        result = score(key, rows)
+        claims = {c["key"]: c for c in result["claims"]}
+        self.assertTrue(claims["coreweave"]["ok"])
+        self.assertFalse(claims["fernwick-coreweave"]["ok"])
+        self.assertTrue(claims["fernwick-coreweave"]["overclaim"])
+        rows[1]["verdict"] = "unverified"
+        self.assertTrue({c["key"]: c for c in score(key, rows)["claims"]}["fernwick-coreweave"]["ok"])
+
+    def test_baseline_prompt_exposes_all_verdicts_needed_by_new_keys(self):
+        prompt_path = ROOT / "evals/baseline-prompt.txt"
+        self.assertTrue(prompt_path.is_file(), "the baseline prompt must be saved for reproducible runs")
+        prompt = prompt_path.read_text(encoding="utf-8").lower()
+        required = {"verified", "self-reported", "stale", "unverified", "incorrect", "inconsistent"}
+        prefix = "use one of these verdicts: "
+        self.assertIn(prefix, prompt)
+        labels = {part.strip(" .\n") for part in prompt.split(prefix, 1)[1].split(",")}
+        self.assertEqual(labels, required)
+        for verdict in labels:
+            self.assertEqual(verdict_of(verdict), verdict)
+
     def test_matches_do_not_overlap_within_a_key(self):
         # One log row per claim: if one match contains another, both keys
         # would score the same row.
