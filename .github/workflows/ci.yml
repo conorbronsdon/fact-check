@@ -8,19 +8,30 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # A new push to the same PR or branch cancels the superseded run.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     strategy:
       matrix:
+        # Ubicloud managed runners (personal-context#1340): GitHub-hosted
+        # minutes on this private repo are billing-blocked. Ubicloud's image is
+        # Ubuntu 24.04; setup-python has a 3.9 build for it, so the 3.9 floor
+        # keeps its own job.
         include:
-          # ubuntu-latest has no Python 3.9 build; 22.04 still does.
           - python-version: "3.9"
-            os: ubuntu-22.04
+            os: ubicloud-standard-2
           - python-version: "3.13"
-            os: ubuntu-latest
+            os: ubicloud-standard-2
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
