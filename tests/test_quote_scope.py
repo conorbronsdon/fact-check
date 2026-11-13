@@ -107,6 +107,35 @@ class ScopeContract(unittest.TestCase):
             self.assertNotEqual(check('"do the change"', source)[0]['status'], 'verbatim')
         self.assertEqual(check('"do the change"', 'We should do the change now')[0]['status'], 'verbatim')
 
+    def test_combining_marks_cannot_be_dropped_at_quote_end(self):
+        for mark in ('\u0301', '\u093e', '\u20dd'):
+            with self.subTest(mark=mark):
+                quote = 'We met at the cafe'
+                source = quote + mark + ' yesterday.'
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+                full = check('"' + quote + mark + '"', source)[0]
+                self.assertEqual(full['status'], 'verbatim')
+                self.assertEqual(full['source_text'], quote + mark)
+
+    def test_matches_cannot_start_after_a_combining_mark(self):
+        for mark in ('\u0301', '\u093e', '\u20dd'):
+            with self.subTest(mark=mark):
+                quote = 'We met at the cafe'
+                source = 'e' + mark + quote + ' yesterday.'
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"e' + mark + quote + '"', source)[0]['status'], 'verbatim')
+
+    def test_quote_edges_that_are_marks_still_require_whole_words(self):
+        pairs = [
+            ('We met at the cafe\u0301', 'We met at the cafe\u0301\u20dd yesterday.'),
+            ('\u0301We met at the cafe', 'e\u0301We met at the cafe yesterday.'),
+            ('We met at the café', 'We met at the cafe\u0301 yesterday.'),
+        ]
+        for quote, source in pairs:
+            with self.subTest(quote=quote, source=source):
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + quote + '"', quote)[0]['status'], 'verbatim')
+
     def test_cli_coverage_receipt_and_exit_codes(self):
         with tempfile.TemporaryDirectory() as directory:
             draft, source = Path(directory, 'draft.md'), Path(directory, 'source.md')

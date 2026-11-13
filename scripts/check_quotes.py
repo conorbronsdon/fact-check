@@ -162,6 +162,11 @@ def canonical(text: str) -> tuple[str, list[int]]:
     return "".join(chars), offsets
 
 
+def word_character(char: str) -> bool:
+    """Unicode marks belong to words even though str.isalnum() excludes them."""
+    return char.isalnum() or char in "_'’" or unicodedata.category(char).startswith("M")
+
+
 def exact_spans(quote: str, source: str):
     """Character matches with word and numeric-edge guards, never fuzzy tokens."""
     needle, _ = canonical(quote)
@@ -174,8 +179,8 @@ def exact_spans(quote: str, source: str):
         end = at + len(needle)
         before, after = text[:at], text[end:]
         left, right = before[-1:] or " ", after[:1] or " "
-        word_left = needle[0].isalnum() and (left.isalnum() or left in "_'’")
-        word_right = needle[-1].isalnum() and (right.isalnum() or right in "_'’")
+        word_left = word_character(needle[0]) and word_character(left)
+        word_right = word_character(needle[-1]) and word_character(right)
         # A substring must not strip a sign, decimal, currency or percent unit
         # at its edges. Internal punctuation is already compared literally.
         prefix = before.rstrip()

@@ -10,6 +10,12 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = [
     (
+        'lost Unicode mark boundary guard',
+        ' or unicodedata.category(char).startswith("M")',
+        '',
+        'test_quote_scope.ScopeContract.test_combining_marks_cannot_be_dropped_at_quote_end',
+    ),
+    (
         'implicit inline-code masking',
         '    text = draft\n',
         '    text = re.sub(r"`[^`]+`", lambda m: " " * len(m.group(0)), draft)\n',
