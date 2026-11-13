@@ -43,6 +43,8 @@ WORD = re.compile(r"(?<![\w.])[+\-\u2212]?(?:\d+(?:[.,]\d+)*|\.\d+)(?:[ \t\u00a0
 EDIT_MARK = re.compile(r"\.(?:[ \t]*\.){2}|\u2026|\[[^\]]*\]")
 SENTENCE_END = re.compile(r"[.!?]+[\"\u201d'\u2019)]*(?=\s|$)|\n[ \t]*\n")
 DEFAULT_THRESHOLD = 0.6
+# Join adjacent digits, space-grouped figures, decimals and numeric ranges.
+NUMERIC_JOIN = r"(?:\s*|[.,]|\s*[-–—]\s*[+\-]?\s*)"
 
 
 def scope(draft: str, exclude_lines: Sequence[tuple[int, int]]) -> tuple[list[bool], list[dict]]:
@@ -181,16 +183,19 @@ def exact_spans(quote: str, source: str):
         left, right = before[-1:] or " ", after[:1] or " "
         word_left = word_character(needle[0]) and word_character(left)
         word_right = word_character(needle[-1]) and word_character(right)
-        # A substring must not strip a sign, decimal, currency or percent unit
-        # at its edges. Internal punctuation is already compared literally.
+        # Do not strip grouped digits, a range endpoint, sign, decimal,
+        # currency or percent unit. Internal punctuation is compared literally.
         prefix = before.rstrip()
         prefix_char = prefix[-1:] or " "
         starts_number = bool(re.match(r"[+\-]?(?:\d|\.\d)", needle))
-        number_left = starts_number and (prefix_char.isdigit() or prefix_char in ".,+-"
-                                         or unicodedata.category(prefix_char) == "Sc")
+        number_left = starts_number and (
+            bool(re.search(r"\d" + NUMERIC_JOIN + r"$", before))
+            or (needle[0].isdigit() and before.endswith("."))
+            or prefix_char in "+-" or unicodedata.category(prefix_char) == "Sc")
         suffix_char = after.lstrip()[:1] or " "
-        number_right = needle[-1].isdigit() and (bool(re.match(r"\s*[%‰]|[.,]\d", after))
-                                                 or unicodedata.category(suffix_char) == "Sc")
+        number_right = needle[-1].isdigit() and (
+            bool(re.match(NUMERIC_JOIN + r"\d", after))
+            or suffix_char in "%‰" or unicodedata.category(suffix_char) == "Sc")
         if not (word_left or word_right or number_left or number_right):
             yield offsets[at], offsets[end - 1] + 1
         start = at + 1

@@ -102,6 +102,62 @@ class ScopeContract(unittest.TestCase):
                 self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
                 self.assertEqual(check('"' + quote + '"', quote)[0]['status'], 'verbatim')
 
+    def test_numeric_quote_end_cannot_drop_space_grouped_digits(self):
+        for separator in (' ', '\u00a0', '\u202f', '\u2009', '\t', '\n', '   '):
+            with self.subTest(separator=separator):
+                quote = 'the team hired 100'
+                source = quote + separator + '000 people'
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + quote + separator + '000"', source)[0]['status'], 'verbatim')
+        for quote, source in [
+                ('the total was 1 00', 'the total was 1 00 000 people'),
+                ('the total was -100', 'the total was -100 000 people'),
+                ('the total was 100', 'the total was 100 000.50 dollars')]:
+            with self.subTest(quote=quote):
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+
+    def test_numeric_quote_start_cannot_drop_space_grouped_digits(self):
+        for separator in (' ', '\u00a0', '\u202f', '\u2009', '\t', '\n'):
+            with self.subTest(separator=separator):
+                quote = '000 people joined today'
+                source = '100' + separator + quote
+                self.assertNotEqual(check('"' + quote + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + source + '"', source)[0]['status'], 'verbatim')
+
+    def test_numeric_range_endpoints_cannot_be_truncated(self):
+        for separator in ('-', '–', '—', ' - ', ' – ', ' — ', ' \u2212 '):
+            with self.subTest(separator=separator):
+                prefix = 'we operated from 2018'
+                source = prefix + separator + '2020'
+                self.assertNotEqual(check('"' + prefix + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + source + '"', source)[0]['status'], 'verbatim')
+                suffix = '2020 was the final operating year'
+                source = '2018' + separator + suffix
+                self.assertNotEqual(check('"' + suffix + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + source + '"', source)[0]['status'], 'verbatim')
+
+    def test_signed_numeric_range_endpoints_cannot_be_truncated(self):
+        for separator in ('-', '–', '—', ' - ', ' – ', ' — '):
+            with self.subTest(separator=separator):
+                prefix = 'temperatures ranged from -10'
+                source = prefix + separator + '-5 degrees'
+                self.assertNotEqual(check('"' + prefix + '"', source)[0]['status'], 'verbatim')
+                suffix = '-5 degrees was the upper bound'
+                source = '-10' + separator + suffix
+                self.assertNotEqual(check('"' + suffix + '"', source)[0]['status'], 'verbatim')
+                self.assertEqual(check('"' + source + '"', source)[0]['status'], 'verbatim')
+
+    def test_numeric_edges_allow_ordinary_sentence_punctuation(self):
+        for prefix in ('He explained, ', 'It was clear. ', 'During 2020, ', 'After 2020. '):
+            with self.subTest(prefix=prefix):
+                quote = '100 people joined today'
+                self.assertEqual(check('"' + quote + '"', prefix + quote + '.')[0]['status'], 'verbatim')
+        for suffix in (', according to the report.', '. They joined today.',
+                       ' - all of them local.', ' – all of them local.', ' — all of them local.'):
+            with self.subTest(suffix=suffix):
+                quote = 'the team hired 100'
+                self.assertEqual(check('"' + quote + '"', quote + suffix)[0]['status'], 'verbatim')
+
     def test_word_edges_do_not_match_partial_words(self):
         for source in ['We need to undo the change', 'do the changes now']:
             self.assertNotEqual(check('"do the change"', source)[0]['status'], 'verbatim')

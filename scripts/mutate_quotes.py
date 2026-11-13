@@ -10,6 +10,24 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = [
     (
+        'overbroad sentence punctuation guard',
+        'or prefix_char in "+-"',
+        'or prefix_char in ".,+-"',
+        'test_quote_scope.ScopeContract.test_numeric_edges_allow_ordinary_sentence_punctuation',
+    ),
+    (
+        'lost numeric continuation at right edge',
+        'bool(re.match(NUMERIC_JOIN + r"\\d", after))',
+        'False',
+        'test_quote_scope.ScopeContract.test_numeric_quote_end_cannot_drop_space_grouped_digits',
+    ),
+    (
+        'lost numeric continuation at left edge',
+        'bool(re.search(r"\\d" + NUMERIC_JOIN + r"$", before))',
+        'False',
+        'test_quote_scope.ScopeContract.test_numeric_range_endpoints_cannot_be_truncated',
+    ),
+    (
         'lost Unicode mark boundary guard',
         ' or unicodedata.category(char).startswith("M")',
         '',
