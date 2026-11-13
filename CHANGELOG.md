@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- Add an optional quote checker that scans all text by default, reports explicit line exclusions, preserves material punctuation in verbatim matching, and surfaces ambiguous delimiters and repeated passages for review.
+
 ## 0.1.1 (unreleased)
 
 - Resolve the optional extractor from the installed skill directory when checking a draft in another project.
