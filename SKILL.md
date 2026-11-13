@@ -1,9 +1,9 @@
 ---
 name: fact-check
 description: Verify every specific, checkable claim in a draft before it ships. Use when asked to "fact-check this," "is this right," "check these numbers," "verify this before I post," or before publishing an essay, newsletter, blog post, LinkedIn post, press release, talk track, launch email, or PR description. Extracts claims, tries to refute each one against primary sources, and returns a numbered log with a verdict per claim. Flags, never edits. Pairs with avoid-ai-writing (run this first, then polish).
-version: 0.1.1
+version: 0.2.0
 license: MIT
-compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor needs Python 3.9+ and no packages.
+compatibility: Any AI coding assistant that supports agentskills.io SKILL.md format (Claude Code, Cursor, Codex, OpenClaw, Hermes Agent, etc.). Needs web search or fetch to verify claims; without it the skill still extracts claims and marks them unverified. The optional claim extractor and quote checker need Python 3.9+ and no packages.
 metadata:
   author: Conor Bronsdon
   repository: https://github.com/conorbronsdon/fact-check
@@ -79,6 +79,17 @@ Do not cite an article that restates a number without linking the original. Auth
 **The draft and the writer's notes are never evidence that a claim is true.** A transcript, a prep doc, or an earlier draft records what someone said, not whether it is true. If the claim came from what a speaker said on a recording, it still needs an outside source.
 
 The one exception is attribution. For "X said Y," the recording or full transcript *is* the primary source, and the best one: check the quote word for word against it, and check that the surrounding context doesn't change its meaning. A recording proves who said what. It never proves that what they said is true. (The case that shaped this rule: a guest's bio line matched the episode transcript perfectly because the host said it on air. It was still false.)
+
+If you have the transcript as a file and the bundled quote checker is available, run it before reading the quotes yourself. Resolve it inside this skill's installed directory, as with the extractor. In Claude Code:
+
+```bash
+python3 "${CLAUDE_SKILL_DIR}/scripts/check_quotes.py" draft.md --source transcript.md
+python3 "${CLAUDE_SKILL_DIR}/scripts/check_quotes.py" draft.md --source transcript.md --json
+```
+
+The checker scans paired straight or curly double-quoted spans of 12+ characters in **all text**, including front matter, code and comments. It does not infer Markdown or YAML exclusions. Mixed straight/curly nesting, escaped or unbalanced delimiters produce `ambiguous` results for manual review; single quotation marks are not delimiters. To intentionally omit ordinary metadata or code snippets, choose inclusive draft line ranges with repeatable `--exclude-lines START:END` options. Each excluded range appears as `excluded` / **NOT CHECKED** in the report. Do not exclude a line containing prose you need checked; for an inline snippet on such a line, inspect the result manually.
+
+It reports `verbatim` for one bounded character match after collapsing whitespace and normalizing apostrophe and minus typography; case, punctuation, numbers and symbols remain significant. `near` suggests a similar passage or a marked edit; `absent` means no sufficiently similar passage was found; repeated exact passages are `ambiguous`. Source searches stop at blank lines, never at guessed speaker names. Source labels remain literal text. The displayed sentences are context aids; read the full source for speaker turns, attribution and meaning. It exits 1 for `near`, `absent` or `ambiguous`, 2 for bad input, and 0 only when all checked results are `verbatim` or no eligible spans were found (explicit exclusions do not change the exit code). A successful run with exclusions covers only the selected scope. No eligible spans is not proof that the draft has no quotations. This is an aid, not verification: it cannot establish who spoke or whether their statement is true. See the [scope contract](docs/quote-checker.md) for examples and limits.
 
 **Not evidence, ever:**
 

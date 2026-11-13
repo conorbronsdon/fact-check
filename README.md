@@ -85,7 +85,22 @@ python3 scripts/extract_claims.py draft.md
 python3 scripts/extract_claims.py --json draft.md
 ```
 
-It skips front matter, code, URLs, list numbering, and version strings. Tests (extractor and scorer): `python3 -m unittest discover -s tests -v`.
+It skips front matter, code, URLs, list numbering, and version strings. Tests (all scripts): `python3 -m unittest discover -s tests -v`.
+
+## The quote checker
+
+`scripts/check_quotes.py` compares double-quoted spans with a local transcript and shows nearby source context. It is an aid, not verification: check attribution, meaning, and the original source yourself.
+
+From this repository root:
+
+```bash
+python3 scripts/check_quotes.py draft.md --source transcript.md
+python3 scripts/check_quotes.py draft.md --source transcript.md --json
+# Intentionally omit a metadata header on lines 1–4; the report records NOT CHECKED.
+python3 scripts/check_quotes.py draft.md --source transcript.md --exclude-lines 1:4
+```
+
+All text is scanned by default, including metadata and code. Exclusions require explicit inclusive line ranges. Case, punctuation, and numeric symbols are significant for a `verbatim` result; similar passages and malformed quote delimiters need review. See [the scope contract and examples](docs/quote-checker.md). In an installed skill, resolve the checker against that skill's directory, as described in `SKILL.md`.
 
 ## Install elsewhere
 
