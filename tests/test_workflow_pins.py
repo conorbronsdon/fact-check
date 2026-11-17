@@ -27,7 +27,8 @@ GITHUB = ROOT / ".github"
 USES_RE = re.compile(r"""^\s*(?:-\s+)?uses:\s*["']?([^\s"'#]+)["']?\s*(#.*)?$""")
 # A step written as a flow mapping: `- {uses: owner/action@v4, with: ...}`.
 FLOW_USES_RE = re.compile(r"""^\s*-\s*\{[^}]*?\buses:\s*["']?([^\s"'#,}]+)""")
-BLOCK_SCALAR_RE = re.compile(r"""^(\s*)(?:-\s+)?[^\s#][^:#]*:\s*[|>][-+0-9]*\s*(?:#.*)?$""")
+# The indent group includes a leading `- `, so a step's sibling keys are not read as scalar body.
+BLOCK_SCALAR_RE = re.compile(r"""^(\s*(?:-\s+)?)[^\s#][^:#]*:\s*[|>][-+0-9]*\s*(?:#.*)?$""")
 SHA_RE = re.compile(r"[0-9a-f]{40}")
 VERSION_COMMENT_RE = re.compile(r"#\s*v?\d")
 SHA1 = "11d5960a326750d5838078e36cf38b85af677262"
@@ -146,6 +147,21 @@ class ParserControls(unittest.TestCase):
     def test_flags_a_pin_without_a_version_comment(self):
         self.assertEqual(unpinned_uses("      - uses: actions/checkout@%s\n" % SHA1),
                          ["actions/checkout@%s (no '# vX.Y.Z' comment)" % SHA1])
+
+    def test_flags_uses_beside_a_step_key_that_opens_a_block_scalar(self):
+        text = (
+            "      - name: >-\n"
+            "          Check out\n"
+            "        uses: actions/checkout@v4\n"
+            "      - if: >-\n"
+            "          always()\n"
+            "        uses: owner/action@main\n"
+            "      - name: |\n"
+            "          x\n"
+            "        uses: actions/setup-node@v4\n"
+        )
+        self.assertEqual(unpinned_uses(text),
+                         ["actions/checkout@v4", "owner/action@main", "actions/setup-node@v4"])
 
     def test_accepts_full_sha_local_and_docker(self):
         text = (
