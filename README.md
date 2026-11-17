@@ -78,12 +78,14 @@ python3 scripts/score_log.py evals/answers/tech-history.json my-log.md --min-rec
 
 `scripts/extract_claims.py` is a dependency-free Python script that lists every sentence containing a number, money, a date, a superlative, an attribution, or a quote. When available, the skill runs it first so obvious claims can't be skipped, then reads the draft for what patterns can't see (a wrong job title, a misspelled product).
 
-From the fact-check repository root, pass the path to your draft:
+From the fact-check repository root (or the installed skill directory), pass the path to a draft. To try it on the bundled sample:
 
 ```bash
-python3 scripts/extract_claims.py draft.md
-python3 scripts/extract_claims.py --json draft.md
+python3 scripts/extract_claims.py examples/draft.md
+python3 scripts/extract_claims.py --json examples/draft.md
 ```
+
+For your own draft, replace `examples/draft.md` with its path. The extractor exits 2 if the file is missing or not UTF-8.
 
 It skips front matter, code, URLs, list numbering, and version strings. Tests (all scripts): `python3 -m unittest discover -s tests -v`.
 
@@ -100,7 +102,13 @@ python3 scripts/check_quotes.py draft.md --source transcript.md --json
 python3 scripts/check_quotes.py draft.md --source transcript.md --exclude-lines 1:4
 ```
 
-All text is scanned by default, including metadata and code. Exclusions require explicit inclusive line ranges. Case, punctuation, and numeric symbols are significant for a `verbatim` result; similar passages and malformed quote delimiters need review. See [the scope contract and examples](docs/quote-checker.md). In an installed skill, resolve the checker against that skill's directory, as described in `SKILL.md`.
+To try it on a bundled draft and transcript (one quote comes back `near`, so the exit code is 1):
+
+```bash
+python3 scripts/check_quotes.py evals/drafts/episode-launch.md --source evals/drafts/episode-launch.transcript.md
+```
+
+The checker exits 0 when every checked quote is `verbatim`, 1 when any result needs review, and 2 on bad input. All text is scanned by default, including metadata and code. Exclusions require explicit inclusive line ranges. Case, punctuation, and numeric symbols are significant for a `verbatim` result; similar passages and malformed quote delimiters need review. See [the scope contract and examples](docs/quote-checker.md). In an installed skill, resolve the checker against that skill's directory, as described in `SKILL.md`.
 
 ## Install elsewhere
 
@@ -110,6 +118,8 @@ All text is scanned by default, including metadata and code. Exclusions require 
   /plugin marketplace add conorbronsdon/fact-check
   /plugin install fact-check@fact-check
   ```
+
+  From a shell, `claude plugin marketplace add conorbronsdon/fact-check` and `claude plugin install fact-check@fact-check` do the same. Use either the plugin or the `git clone` install, not both: when both are present, Claude Code loads the plugin and skips the copy in `~/.claude/skills/fact-check` because the name is taken.
 - **Cursor, Codex, other agents:** copy the folder into your agent's skills directory, or paste `SKILL.md` into your rules or instructions.
 
 ## Limits
