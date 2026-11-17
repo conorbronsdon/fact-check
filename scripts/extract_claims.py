@@ -114,8 +114,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", action="store_true", help="emit JSON")
     args = ap.parse_args(argv)
     try:
-        text = sys.stdin.read() if args.path == "-" else open(args.path, encoding="utf-8").read()
-    except OSError as exc:
+        # utf-8-sig drops a byte-order mark, so front matter after one is still skipped.
+        if args.path == "-":
+            text = sys.stdin.buffer.read().decode("utf-8-sig")
+        else:
+            with open(args.path, encoding="utf-8-sig") as fh:
+                text = fh.read()
+    except (OSError, UnicodeDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     claims = extract(text)
