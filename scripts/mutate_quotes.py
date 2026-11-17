@@ -47,7 +47,7 @@ MUTATIONS = [
     ),
     (
         'cross-gap quote pairing',
-        '        if masked[i]:\n            if opening is not None:',
+        '        if masked[i]:\n            if stack:',
         '        if masked[i]:\n            if False:',
         'test_quote_scope.ScopeContract.test_exclusion_does_not_pair_delimiters_across_a_gap',
     ),
@@ -65,9 +65,27 @@ MUTATIONS = [
     ),
     (
         'length filter steals a short pair',
-        '        opening = None\n    if opening is not None:',
-        '        if len(quote) >= 12:\n            opening = None\n    if opening is not None:',
+        '        a = stack.pop()[0]\n',
+        '        if len(" ".join(text[stack[-1][0] + 1:i].split())) < 12:\n            continue\n        a = stack.pop()[0]\n',
         'test_quote_redesign.QuoteBoundaries.test_short_pair_does_not_consume_the_following_quote',
+    ),
+    (
+        'sequential straight-quote pairing',
+        '        if shape == "open":\n',
+        '        if shape == "open" and ch != \'"\':\n',
+        'test_quote_nesting.NestedStraightQuotes.test_nesting_is_detected_when_the_inner_closer_is_unspaced',
+    ),
+    (
+        'stray closing quote opens a pair',
+        '            if shape == "close":\n',
+        '            if ch == "\\u201d":\n',
+        'test_quote_nesting.NestedStraightQuotes.test_stray_closing_straight_quote_does_not_open_a_pair',
+    ),
+    (
+        'nested run reports fragments',
+        '        if nested or mixed:\n            reason =',
+        '        if False:\n            reason =',
+        'test_quote_nesting.NestedStraightQuotes.test_no_fragment_of_a_nested_run_is_ever_verbatim',
     ),
 ]
 
