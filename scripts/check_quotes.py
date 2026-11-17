@@ -45,6 +45,8 @@ SENTENCE_END = re.compile(r"[.!?]+[\"\u201d'\u2019)]*(?=\s|$)|\n[ \t]*\n")
 DEFAULT_THRESHOLD = 0.6
 # Join adjacent digits, space-grouped figures, decimals and numeric ranges.
 NUMERIC_JOIN = r"(?:\s*|[.,]|\s*[-–—]\s*[+\-]?\s*)"
+NESTED_REASON = ("Nested straight quotes cannot be paired reliably; "
+                 "no part of this span was checked.")
 
 
 def scope(draft: str, exclude_lines: Sequence[tuple[int, int]]) -> tuple[list[bool], list[dict]]:
@@ -77,24 +79,51 @@ def tokens(text: str) -> list[tuple[str, int, int]]:
     return out
 
 
+def flank(text: str, i: int) -> str:
+    """Shape of a straight quote from its neighbours: open, close or either.
+
+    Like Markdown emphasis flanking: an opener is followed by text and
+    preceded by space, punctuation or the start; a closer is the mirror.
+    """
+    before = text[i - 1] if i else " "
+    after = text[i + 1] if i + 1 < len(text) else " "
+    punct = lambda c: unicodedata.category(c)[0] in "PS"
+    opens = not after.isspace() and (before.isspace() or punct(before))
+    closes = not before.isspace() and (after.isspace() or punct(after))
+    return "open" if opens and not closes else "close" if closes and not opens else "either"
+
+
 def scan_quotes(draft: str, exclude_lines: Sequence[tuple[int, int]] = ()) -> tuple[list[dict], list[dict], list[dict]]:
-    """Pair every delimiter before the length filter; report malformed pairs."""
+    """Pair every delimiter before the length filter; report malformed pairs.
+
+    Delimiters nest on a stack. A straight quote shaped like an opener inside
+    an open straight quote starts a nested run; a run that nests or mixes
+    delimiter styles is reported whole as ambiguous and none of it is checked,
+    because sequential pairing cannot tell nested from adjacent quotations.
+    """
     diagnostics = []
     text = draft
     masked, receipts = scope(draft, exclude_lines)
     found = []
-    opening = None
+    stack = []  # (offset, delimiter) of each open quote, outermost first
+    nested = mixed = False
+    line = lambda at: text.count("\n", 0, at) + 1
+
+    def abandon(reason: str) -> None:
+        nonlocal nested, mixed
+        if nested or mixed:
+            reason += " " + NESTED_REASON
+        diagnostics.append({"line": line(stack[0][0]), "reason": reason})
+        stack.clear()
+        nested = mixed = False
+
     for i, ch in enumerate(text):
         if masked[i]:
-            if opening is not None:
-                diagnostics.append({"line": text.count("\n", 0, opening[0]) + 1,
-                                    "reason": "Quote interrupted by an explicit exclusion."})
-                opening = None
+            if stack:
+                abandon("Quote interrupted by an explicit exclusion.")
             continue
-        if opening is not None and ch == "\n" and re.match(r"\n[ \t\r]*\n", text[i:]):
-            diagnostics.append({"line": text.count("\n", 0, opening[0]) + 1,
-                                "reason": "Quote crosses a blank paragraph."})
-            opening = None
+        if stack and ch == "\n" and re.match(r"\n[ \t\r]*\n", text[i:]):
+            abandon("Quote crosses a blank paragraph.")
         if ch not in ('"', '\u201c', '\u201d'):
             continue
         backslashes = 0
@@ -103,27 +132,36 @@ def scan_quotes(draft: str, exclude_lines: Sequence[tuple[int, int]] = ()) -> tu
             backslashes += 1
             j -= 1
         if backslashes % 2:
-            diagnostics.append({"line": text.count("\n", 0, i) + 1,
-                                "reason": "Escaped quote delimiter requires manual review."})
-        if opening is None:
-            if ch == '\u201d':
-                diagnostics.append({"line": text.count("\n", 0, i) + 1, "reason": "Unmatched closing quote."})
+            diagnostics.append({"line": line(i), "reason": "Escaped quote delimiter requires manual review."})
+        shape = "open" if ch == "\u201c" else "close" if ch == "\u201d" else flank(text, i)
+        if not stack:
+            if shape == "close":
+                diagnostics.append({"line": line(i), "reason": "Unmatched closing quote."})
             else:
-                opening = (i, ch)
+                stack.append((i, ch))
             continue
-        a, delim = opening
-        expected = '"' if delim == '"' else '\u201d'
-        if ch != expected:
-            diagnostics.append({"line": text.count("\n", 0, a) + 1, "reason": "Mixed or nested quote delimiters."})
-            opening = None
+        top = stack[-1][1]
+        if shape == "open":
+            stack.append((i, ch))
+            nested = True
+            continue
+        if top != ('"' if ch == '"' else "\u201c"):
+            mixed = True
+        a = stack.pop()[0]
+        if stack:
+            continue
+        if nested or mixed:
+            reason = "Mixed or nested quote delimiters." if mixed else NESTED_REASON
+            diagnostics.append({"line": line(a), "reason": reason,
+                                "span": " ".join(text[a:i + 1].split())})
+            nested = mixed = False
             continue
         content = text[a + 1:i]
         quote = " ".join(content.split())
         if len(quote) >= 12 and tokens(quote):
-            found.append({"line": text.count("\n", 0, a) + 1, "quote": quote})
-        opening = None
-    if opening is not None:
-        diagnostics.append({"line": text.count("\n", 0, opening[0]) + 1, "reason": "Unmatched opening quote."})
+            found.append({"line": line(a), "quote": quote})
+    if stack:
+        abandon("Unmatched opening quote.")
     return found, diagnostics, receipts
 
 
@@ -356,8 +394,7 @@ def check(draft: str, source: str, threshold: float = DEFAULT_THRESHOLD,
         res["context"] = context(source, spans, a, b)
         results.append(res)
     for diagnostic in diagnostics:
-        results.append({"id": len(results) + 1, "line": diagnostic["line"], "quote": "",
-                        "status": "ambiguous", "reason": diagnostic["reason"]})
+        results.append({"id": len(results) + 1, "quote": "", "status": "ambiguous", **diagnostic})
     for receipt in receipts:
         results.append({"id": len(results) + 1, "quote": "", "status": "excluded", **receipt})
     return results
@@ -373,6 +410,8 @@ def to_text(results: list[dict]) -> str:
             out.append(f"  lines {r['line']}:{r['end_line']} NOT CHECKED: {r['reason']}")
         elif r["status"] == "ambiguous":
             out.append(f"  review required: {r['reason']}")
+            if r.get("span"):
+                out.append(f"  unchecked span: {r['span']}")
             if "candidate_count" in r:
                 out.append(f"  {r['candidate_count']} exact passages; showing {len(r['candidates'])}")
                 for candidate in r["candidates"]:

@@ -8,7 +8,7 @@ This repo ships one skill, `SKILL.md`, plus an optional claim extractor in `scri
 - `scripts/extract_claims.py`: stdlib-only extractor the skill runs as a floor before reading the draft.
 - `tests/test_extract_claims.py`: must-fire and must-not-fire cases for the extractor. Run with `python3 -m unittest discover -s tests -v`.
 - `scripts/check_quotes.py`: stdlib-only quote checker. Scans all text by default; explicit line exclusions appear in its report. Exit 1 for results needing review, 2 on bad input.
-- `tests/test_check_quotes.py`, `tests/test_quote_redesign.py`, `tests/test_quote_scope.py`: quote matching, context, and scope regression controls.
+- `tests/test_check_quotes.py`, `tests/test_quote_redesign.py`, `tests/test_quote_scope.py`, `tests/test_quote_nesting.py`: quote matching, context, scope, and nested-delimiter regression controls.
 - `scripts/mutate_quotes.py`: representative mutation checks for the quote checker, run in disposable copies.
 - `scripts/score_log.py`: stdlib-only scorer that grades a fact-check log against an answer key. Exit 1 below `--min-recall`, 2 on bad input.
 - `tests/test_score_log.py`: scorer tests, plus a check that every answer-key `match` string appears exactly once in its draft.
