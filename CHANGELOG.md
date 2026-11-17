@@ -4,6 +4,7 @@
 
 - Add an optional quote checker that scans all text by default, reports explicit line exclusions, preserves material punctuation in verbatim matching, and surfaces ambiguous delimiters and repeated passages for review.
 - Report unescaped straight quotes nested inside straight quotes (and straight/curly mixtures) as one ambiguous span instead of checking a trailing fragment as `verbatim`; a stray closing straight quote no longer opens a pair (#13).
+- `extract_claims.py` exits 2 with an error on input that is not UTF-8 instead of crashing with a traceback, and skips front matter in files that start with a byte-order mark.
 
 ## 0.1.1 (unreleased)
 

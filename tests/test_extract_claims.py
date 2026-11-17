@@ -1,6 +1,7 @@
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -109,6 +110,26 @@ class CLI(unittest.TestCase):
     def test_missing_file(self):
         r = self.run_cli("does-not-exist.md")
         self.assertEqual(r.returncode, 2)
+
+    def test_non_utf8_file_exits_2_without_traceback(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "latin1.md"
+            path.write_bytes(b"Revenue grew 40% in caf\xe9 sales.\n")
+            r = self.run_cli(str(path))
+        self.assertEqual(r.returncode, 2)
+        self.assertEqual(r.stdout, "")
+        self.assertTrue(r.stderr.startswith("error: 'utf-8' codec can't decode byte 0xe9"), r.stderr)
+        self.assertNotIn("Traceback", r.stderr)
+
+    def test_bom_file_skips_front_matter(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bom.md"
+            path.write_bytes("\ufeff---\ntitle: Raised $5 million in 2024\n---\nSales hit $5 billion in 2023.\n".encode("utf-8"))
+            r = self.run_cli("--json", str(path))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        data = json.loads(r.stdout)
+        self.assertEqual([(c["line"], c["sentence"]) for c in data],
+                         [(4, "Sales hit $5 billion in 2023.")])
 
     def test_example_draft(self):
         r = self.run_cli("--json", str(ROOT / "examples" / "draft.md"))
