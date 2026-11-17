@@ -79,6 +79,11 @@ def tokens(text: str) -> list[tuple[str, int, int]]:
     return out
 
 
+def edge(char: str) -> bool:
+    """Space or punctuation/symbol: what sits outside a quotation."""
+    return char.isspace() or unicodedata.category(char)[0] in "PS"
+
+
 def flank(text: str, i: int) -> str:
     """Shape of a straight quote from its neighbours: open, close or either.
 
@@ -87,9 +92,8 @@ def flank(text: str, i: int) -> str:
     """
     before = text[i - 1] if i else " "
     after = text[i + 1] if i + 1 < len(text) else " "
-    punct = lambda c: unicodedata.category(c)[0] in "PS"
-    opens = not after.isspace() and (before.isspace() or punct(before))
-    closes = not before.isspace() and (after.isspace() or punct(after))
+    opens = not after.isspace() and edge(before)
+    closes = not before.isspace() and edge(after)
     return "open" if opens and not closes else "close" if closes and not opens else "either"
 
 
@@ -107,7 +111,9 @@ def scan_quotes(draft: str, exclude_lines: Sequence[tuple[int, int]] = ()) -> tu
     found = []
     stack = []  # (offset, delimiter) of each open quote, outermost first
     nested = mixed = False
-    line = lambda at: text.count("\n", 0, at) + 1
+
+    def line(at: int) -> int:
+        return text.count("\n", 0, at) + 1
 
     def abandon(reason: str) -> None:
         nonlocal nested, mixed
